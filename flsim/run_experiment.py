@@ -67,6 +67,12 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
             seed=42 + r,
         )
 
+        # Ensure the contract's baseline matches the parameters used for training
+        if contract.prev_global is None:
+            contract.prev_global = reference_global
+        else:
+            contract.prev_global = global_params
+
         print(f"Round {r} updates: {len(updates)} clients")
         # FL pipeline using the existing contract (detection/aggregation/etc.)
         
@@ -86,6 +92,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         # print("\n", updates)
         # Run the settlement round with the current updates
         res = contract.run_round(r, updates=updates, true_malicious=true_mal)
+        global_params = res["global_params"]
+        contract.prev_global = global_params
         print(f"Round {r} results: {res}")
 
         results.append(res)
