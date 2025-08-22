@@ -23,7 +23,7 @@ def test_logreg_fit_local_returns_consistent_metrics():
         X_val=X_val,
         y_val=y_val,
     )
-
+    print(metrics)
     assert metrics["acc"] == metrics["train_acc"]
     assert set(["loss", "acc", "train_acc", "val_acc", "n"]).issubset(metrics)
     assert not np.isnan(metrics["val_acc"])

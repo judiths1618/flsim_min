@@ -5,6 +5,7 @@ flsim/config.py
 flsim/metrics.py
 flsim/run_experiment.py
 flsim/run_local_training.py
+flsim/test_local_global_train.py
 flsim.egg-info/PKG-INFO
 flsim.egg-info/SOURCES.txt
 flsim.egg-info/dependency_links.txt
@@ -13,6 +14,7 @@ flsim.egg-info/top_level.txt
 flsim/aggregation/__init__.py
 flsim/aggregation/base.py
 flsim/aggregation/flame.py
+flsim/attack/malicious.py
 flsim/contracts/__init__.py
 flsim/contracts/composed.py
 flsim/core/__init__.py
@@ -20,6 +22,8 @@ flsim/core/registry.py
 flsim/core/types.py
 flsim/data/__init__.py
 flsim/data/flower.py
+flsim/eval/eval_utils.py
+flsim/eval/global_evaluation.py
 flsim/incentive/__init__.py
 flsim/incentive/contribution.py
 flsim/incentive/penalty.py
@@ -32,4 +36,7 @@ flsim/model/__init__.py
 flsim/model/base.py
 flsim/model/logreg.py
 flsim/train/local.py
+tests/test_aggregation.py
 tests/test_contracts.py
+tests/test_logreg_metrics.py
+tests/test_run_experiment.py

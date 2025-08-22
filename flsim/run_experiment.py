@@ -8,26 +8,27 @@ from flsim.core.types import ModelUpdate
 from flsim.data.flower import load_flower_label_vectors, project_vectors
 from flsim.data.flower import load_flower_arrays
 from flsim.train.local import train_locally_on_partitions
+from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_global_params
 
-def simulate_updates(n_nodes:int, dim:int, true_malicious:set[int], benign_mu=1.0, benign_sigma=0.05, mal_sigma=5.0, mal_shift=10.0):
-    updates = []
-    for nid in range(1, n_nodes+1):
-        if nid in true_malicious:
-            vec = np.random.randn(dim) * mal_sigma + mal_shift
-            acc = float(np.clip(np.random.rand()*0.1 + 0.7, 0, 1))
-        else:
-            vec = benign_mu + np.random.randn(dim) * benign_sigma
-            acc = float(np.clip(np.random.rand()*0.2 + 0.8, 0, 1))
-        updates.append(
-            ModelUpdate(
-                node_id=nid,
-                params=vec,
-                weight=1.0,
-                metrics={"eval_acc": acc},
-                update_type="weights",
-            )
-        )
-    return updates
+# def simulate_updates(n_nodes:int, dim:int, true_malicious:set[int], benign_mu=1.0, benign_sigma=0.05, mal_sigma=5.0, mal_shift=10.0):
+#     updates = []
+#     for nid in range(1, n_nodes+1):
+#         if nid in true_malicious:
+#             vec = np.random.randn(dim) * mal_sigma + mal_shift
+#             acc = float(np.clip(np.random.rand()*0.1 + 0.7, 0, 1))
+#         else:
+#             vec = benign_mu + np.random.randn(dim) * benign_sigma
+#             acc = float(np.clip(np.random.rand()*0.2 + 0.8, 0, 1))
+#         updates.append(
+#             ModelUpdate(
+#                 node_id=nid,
+#                 params=vec,
+#                 weight=1.0,
+#                 metrics={"eval_acc": acc},
+#                 update_type="weights",
+#             )
+#         )
+#     return updates
 
 def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:int, dim:int, out:str|None,
         use_flower: bool=False, dataset: str='cifar10', model: str='logreg',iid: bool=True, alpha: float=0.5, split: str='train', epochs:int=10, batch:int=64, lr:float=0.1,
@@ -101,8 +102,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         
         # Set features for each node based on updates
         for u in updates:
-            contract.set_features(u.node_id, flat_update=u.params, claimed_acc=float(u.metrics.get("acc")))
-        #                    eval_acc=float(u.metrics.get("eval_acc", 0.9)))
+            contract.set_features(u.node_id, flat_update=u.params, claimed_acc=float(u.metrics.get("acc")),
+                           eval_acc=float(u.metrics.get("val_acc")))
         
         # Set contributions and credit rewards 
         for u in updates:
@@ -117,6 +118,9 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         res = contract.run_round(r, updates=updates, true_malicious=true_mal)
 
         logger.info(f"Round {r} results: {res}")
+
+        mG = evaluate_global_params(model, res["global_params"], X_eval, y_eval)
+        print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
 
         results.append(res)
 
