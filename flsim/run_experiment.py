@@ -46,8 +46,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
     true_mal = set(random.sample(range(1, nodes+1), k=mcount))
     print(f"True malicious nodes: {sorted(true_mal)}")
 
-    # Load client dataset partitions (X, y)
-    Xp, yp, D, K = load_flower_arrays(
+    # Load client dataset partitions (X, y) along with global eval set
+    Xp, yp, D, K, X_eval, y_eval = load_flower_arrays(
         dataset=dataset,
         n_clients=nodes,
         iid=iid,
@@ -67,13 +67,19 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         # Local training per client on their partition
         updates, reference_global = train_locally_on_partitions(
             model_name=model,
-            partitions={cid: (Xp[cid], yp[cid]) for cid in Xp},
+            partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
             global_params=global_params,
             epochs=epochs,
             batch_size=batch,
             lr=lr,
             seed=42 + r,
         )
+
+        # Ensure the contract's baseline matches the parameters used for training
+        if contract.prev_global is None:
+            contract.prev_global = reference_global
+        else:
+            contract.prev_global = global_params
 
         print(f"Round {r} updates: {len(updates)} clients")
         # FL pipeline using the existing contract (detection/aggregation/etc.)
@@ -94,6 +100,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         # print("\n", updates)
         # Run the settlement round with the current updates
         res = contract.run_round(r, updates=updates, true_malicious=true_mal)
+        global_params = res["global_params"]
+        contract.prev_global = global_params
         print(f"Round {r} results: {res}")
 
         results.append(res)

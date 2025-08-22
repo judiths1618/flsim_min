@@ -20,6 +20,8 @@ def test_settlement_penalty_applied():
         c.set_features(nid, flat_update=vec, claimed_acc=0.9, eval_acc=0.85)
         c.set_contribution(nid, 0.9)
         c.credit_reward(nid, 10.0)
+    # Force detection to mark node 1 as malicious
+    c.detector.detect = lambda feats, scores: {1: True}
     res = c.run_round(0, updates=None, true_malicious={1})
     assert isinstance(res, dict)
 
@@ -41,3 +43,13 @@ def test_flame_aggregation_shape():
     else:
         out_vec = out.ravel()
     assert out_vec.shape == (5,)
+
+
+def test_run_round_no_updates_returns_prev_global():
+    c = ComposedContract(ContractConfig(committee_size=2, settlement="plans_engine"))
+    for nid in range(1, 3):
+        c.register_node(nid, stake=100.0, reputation=50.0)
+    updates = [ModelUpdate(node_id=1, params=np.ones(3), weight=1.0)]
+    first = c.run_round(0, updates=updates)
+    second = c.run_round(1, updates=None)
+    assert np.array_equal(second["global_params"], first["global_params"])
