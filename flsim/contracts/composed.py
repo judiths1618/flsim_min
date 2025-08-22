@@ -34,10 +34,12 @@ class ComposedContract:
         self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
         sel_params = {
             "committee_size": self.cfg.committee_size,
-            "cooldown": self.cfg.committee_cooldown,
             "rep_exponent": self.cfg.rep_exponent,
+            "cooldown": self.cfg.committee_cooldown,
         }
+       
         sel_params.update((strategy_params or {}).get('selection', {}))
+
         self.selector = SELECTION.get(self.cfg.selection)(**sel_params)
         self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
         self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**(strategy_params or {}).get('aggregation', {}))
@@ -134,18 +136,30 @@ class ComposedContract:
                   true_malicious: Optional[Sequence[int]] = None):
         
         print(f"Selected committee: {self.select_committee()} for round {round_idx}")
-        plans = self.settlement.run(round_idx, self.nodes, self.contributions, self.features,
-                                    self.rewards, self.detector, self.reward, self.penalty, self.reputation)
+        plans = self.settlement.run(
+            round_idx,
+            self.nodes,
+            self.contributions,
+            self.features,
+            self.rewards,
+            self.detector,
+            self.reward,
+            self.penalty,
+            self.reputation,
+        )
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
+
         
         global_params = self.prev_global  # carry over previous global parameters
+
         if updates:
             admitted_ids = [u.node_id for u in updates if u.node_id not in set(detected_ids)]
             print(f"Admitted client ids: {admitted_ids}")
             try:
-                global_params = self.aggregator.aggregate(updates, prev_global=self.prev_global, admitted_ids=admitted_ids)
-
+                global_params = self.aggregator.aggregate(
+                    updates, prev_global=self.prev_global, admitted_ids=admitted_ids
+                )
             except TypeError:
                 global_params = self.aggregator.aggregate(updates)
             self.prev_global = global_params
