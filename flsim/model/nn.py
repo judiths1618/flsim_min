@@ -122,5 +122,5 @@ class MLP(BaseModel):
             "val_acc": v_acc,
             "n": float(N),
         }
-        print("mlp: ", metrics)
+        # print("mlp: ", metrics)
         return metrics

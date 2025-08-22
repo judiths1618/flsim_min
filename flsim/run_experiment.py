@@ -9,6 +9,7 @@ from flsim.data.flower import load_flower_label_vectors, project_vectors
 from flsim.data.flower import load_flower_arrays
 from flsim.train.local import train_locally_on_partitions
 from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_global_params
+from flsim.attack.malicious import choose_malicious_nodes, apply_malicious_updates
 
 # def simulate_updates(n_nodes:int, dim:int, true_malicious:set[int], benign_mu=1.0, benign_sigma=0.05, mal_sigma=5.0, mal_shift=10.0):
 #     updates = []
@@ -30,7 +31,7 @@ from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_glo
 #         )
 #     return updates
 
-def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:int, dim:int, out:str|None,
+def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malicious_behavior: float, seed:int, dim:int, out:str|None,
         use_flower: bool=False, dataset: str='cifar10', model: str='logreg',iid: bool=True, alpha: float=0.5, split: str='train', epochs:int=10, batch:int=64, lr:float=0.1,
         log_dir: str = "runs", retain_logs: bool = True):
     np.random.seed(seed); random.seed(seed)
@@ -42,10 +43,15 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
     for nid in range(1, nodes+1):
         contract.register_node(nid, stake=100.0, reputation=50.0)
 
-    # Determine number of malicious nodes
-    mcount = max(0, int(round(nodes * float(malicious_ratio))))
-    mcount = min(nodes, mcount)
-    true_mal = set(random.sample(range(1, nodes+1), k=mcount))
+    # set malicious nodes
+    # explicit = {int(x) for x in args.mal_ids.split(",") if x.strip()} if args.mal_ids else None
+    true_mal = choose_malicious_nodes(
+        all_node_ids= [client_id for client_id in Xp.keys()],
+        mal_frac=float(malicious_ratio),
+        explicit_ids={},
+        seed=42,
+    )
+    print(f"[Info] Malicious nodes: {sorted(true_mal)} (behavior={malicious_behavior})")
 
     if not retain_logs and os.path.exists(log_dir):
         shutil.rmtree(log_dir)
@@ -82,15 +88,27 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         logger.handlers = [handler]
 
         # Local training per client on their partition
-        updates, reference_global = train_locally_on_partitions(
-            model_name=model,
-            partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
-            global_params=global_params,
-            epochs=epochs,
-            batch_size=batch,
-            lr=lr,
-            seed=42 + r,
-        )
+        if true_mal is None: 
+            updates, reference_global = train_locally_on_partitions(
+                model_name=model,
+                partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
+                global_params=global_params,
+                epochs=epochs,
+                batch_size=batch,
+                lr=lr,
+                seed=42 + r,
+            )
+        else: 
+            # —— 对恶意节点应用篡改 ——
+            updates, true_mal_round = apply_malicious_updates(
+                updates,
+                malicious_ids=true_mal,
+                behavior=malicious_behavior,
+                scale=malicious_scale,
+                noise_std=malicious_noise_std,
+                seed=42 + r,
+            )
+
         # Use the parameters employed for local training as the baseline for aggregation
         contract.prev_global = reference_global
         global_params = reference_global
@@ -158,7 +176,7 @@ def main():
     ap.add_argument("--config", required=True, help="Path to YAML config")
     ap.add_argument("--rounds", type=int, default=3)
     ap.add_argument("--nodes", type=int, default=8)
-    ap.add_argument("--malicious_ratio", type=float, default=0.25, help="fraction of malicious clients in [0,1]")
+    ap.add_argument("--mal_ratio", type=float, default=0.25, help="fraction of malicious clients in [0,1]")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--dim", type=int, default=100, help="update dimension for synthetic or projected vectors")
     ap.add_argument("--out", type=str, default=None, help="json output path")
@@ -174,16 +192,27 @@ def main():
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--lr", type=float, default=0.1)
 
-    ap.add_argument("--log-dir", type=str, default="runs", help="Base directory to store logs")
-    ap.add_argument("--clear-log-dir", action="store_true", help="Remove existing log directory before running")
+    ap.add_argument("--log_dir", type=str, default="runs", help="Base directory to store logs")
+    ap.add_argument("--clear_log_dir", action="store_true", help="Remove existing log directory before running")
 
+        # —— 新增恶意相关参数 ——
+    ap.add_argument("--mal_ids", type=str, default="", help="显式恶意节点ID，逗号分隔，如 1,3,5")
+    ap.add_argument("--mal_behavior", type=str, default="scale",
+                    choices=["scale", "signflip", "zero", "noise"])
+    ap.add_argument("--mal_scale", type=float, default=-10.0, help="scale 行为的缩放因子")
+    ap.add_argument("--mal_noise_std", type=float, default=0.1, help="noise 行为的噪声标准差")
+    
+    ap.add_argument("--defense", default="flame")
 
     args = ap.parse_args()
     run(
         args.config,
         rounds=args.rounds,
         nodes=args.nodes,
-        malicious_ratio=args.malicious_ratio,
+        malicious_ratio=args.mal_ratio,
+        malicious_behavior=args.mal_behavior,
+        mal_scale=args.mal_scale,
+        mal_noise_std=args.mal_noise_std,
         seed=args.seed,
         dim=args.dim,
         out=args.out,
@@ -193,6 +222,9 @@ def main():
         iid=args.iid,
         alpha=args.alpha,
         split=args.split,
+        epochs=args.epochs,
+        batch=args.batch,
+        lr=args.lr,
         log_dir=args.log_dir,
         retain_logs=not args.clear_log_dir,
     )
