@@ -18,7 +18,15 @@ def simulate_updates(n_nodes:int, dim:int, true_malicious:set[int], benign_mu=1.
         else:
             vec = benign_mu + np.random.randn(dim) * benign_sigma
             acc = float(np.clip(np.random.rand()*0.2 + 0.8, 0, 1))
-        updates.append(ModelUpdate(node_id=nid, params=vec, weight=1.0, metrics={"eval_acc": acc}))
+        updates.append(
+            ModelUpdate(
+                node_id=nid,
+                params=vec,
+                weight=1.0,
+                metrics={"eval_acc": acc},
+                update_type="weights",
+            )
+        )
     return updates
 
 def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:int, dim:int, out:str|None,
