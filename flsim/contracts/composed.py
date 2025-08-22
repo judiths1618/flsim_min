@@ -32,7 +32,13 @@ class ComposedContract:
         self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
         self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
-        self.selector = SELECTION.get(self.cfg.selection)(**(strategy_params or {}).get('selection', {}))
+        sel_kwargs = {
+            "committee_size": self.cfg.committee_size,
+            "rep_exponent": self.cfg.rep_exponent,
+            "cooldown": self.cfg.committee_cooldown,
+        }
+        sel_kwargs.update((strategy_params or {}).get("selection", {}))
+        self.selector = SELECTION.get(self.cfg.selection)(**sel_kwargs)
         self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
         self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**(strategy_params or {}).get('aggregation', {}))
 
@@ -136,8 +142,8 @@ class ComposedContract:
                                     self.rewards, self.detector, self.reward, self.penalty, self.reputation)
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
-        
-        # global_params = None
+
+        global_params = None
         if updates:
             admitted_ids = [u.node_id for u in updates if u.node_id not in set(detected_ids)]
             print(f"Admitted client ids: {admitted_ids}")
@@ -168,7 +174,5 @@ class ComposedContract:
         self.features.clear()
         self.contributions.clear()
         self.rewards.clear()
-
-        
 
         return out
