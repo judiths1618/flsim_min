@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Set
+from typing import Any, Dict, List, Optional, Sequence, Set
 import numpy as np
 
 from ..core.types import NodeState, ModelUpdate
@@ -50,10 +50,6 @@ class ComposedContract:
     def register_node(self, node_id: int, *, stake: float, reputation: float):
         self.nodes[node_id] = NodeState(node_id=node_id, stake=float(stake), reputation=float(reputation))
         self.cooldowns.setdefault(node_id, 0.0)
-
-    # in flsim/contracts/composed.py
-    from typing import Any
-    # import numpy as np
 
     def set_features(self, node_id: int, **feats: Any):
         out = {}
