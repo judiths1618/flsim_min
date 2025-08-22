@@ -1,0 +1,14 @@
+numpy
+pyyaml
+
+[data]
+flwr-datasets>=0.2.0
+datasets>=2.17.0
+pillow
+
+[detector]
+hdbscan
+scikit-learn
+
+[dev]
+pytest

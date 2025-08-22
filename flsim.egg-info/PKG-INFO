@@ -1,0 +1,39 @@
+Metadata-Version: 2.4
+Name: flsim
+Version: 0.1.1
+Summary: Slim federated learning simulation with plan-based contracts and FLAME
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: pyyaml
+Provides-Extra: detector
+Requires-Dist: hdbscan; extra == "detector"
+Requires-Dist: scikit-learn; extra == "detector"
+Provides-Extra: data
+Requires-Dist: flwr-datasets>=0.2.0; extra == "data"
+Requires-Dist: datasets>=2.17.0; extra == "data"
+Requires-Dist: pillow; extra == "data"
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+
+# flsim (slim, fixed)
+
+Install:
+```bash
+pip install -e .[dev,detector,data]
+```
+
+Run tests:
+```bash
+pytest -q tests
+```
+
+Run with Flower IID partitions:
+```bash
+python flsim/run_experiment.py --config configs/exp_default.yaml   --rounds 3 --nodes 8 --malicious_ratio 0.25 --dim 100   --use_flower --dataset cifar10 --iid
+```
+
+Run with Flower non-IID (Dirichlet alpha=0.3):
+```bash
+python flsim/run_experiment.py --config configs/exp_default.yaml   --rounds 3 --nodes 8 --malicious_ratio 0.25 --dim 100   --use_flower --dataset cifar10 --alpha 0.3
+```
