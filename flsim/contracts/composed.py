@@ -1,5 +1,5 @@
-from __future__ import annotations
 from dataclasses import dataclass
+
 from typing import Any, Dict, List, Optional, Sequence, Set
 import numpy as np
 
@@ -22,11 +22,12 @@ class ContractConfig:
     selection: str = "stratified_softmax"
     settlement: str = "plans_engine"
     aggregation: str = "flame_agg"
-    # aggregation: str = "base_Fedavg"
+
 
 class ComposedContract:
     def __init__(self, cfg: ContractConfig | None = None, strategy_params: dict | None = None):
         self.cfg = cfg or ContractConfig()
+
         self.detector = DETECTION.get(self.cfg.detection)(**(strategy_params or {}).get('detection', {}))
         self.contrib = CONTRIB.get(self.cfg.contribution)(**(strategy_params or {}).get('contribution', {}))
         self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
@@ -63,30 +64,21 @@ class ComposedContract:
         for k, v in feats.items():
             if v is None:
                 continue
-            # vectors/matrices -> numpy array (float)
             if isinstance(v, (np.ndarray, list, tuple)):
                 try:
                     out[k] = np.asarray(v, dtype=float)
                 except Exception:
                     out[k] = np.asarray(v)
-            # numeric scalars -> float
             elif isinstance(v, (int, float, np.integer, np.floating)):
                 out[k] = float(v)
-            # fallback: keep as-is (strings, bools, etc.)
             else:
                 try:
                     out[k] = float(v)
                 except Exception:
                     out[k] = v
-        # print(f"Set features for node {node_id}: {out}")
         self.features[int(node_id)] = out
 
-    # def set_features(self, node_id: int, **feats: float):
-    #     self.features[int(node_id)] = {k: float(v) for k, v in feats.items()}
-
     def set_contribution(self, node_id: int, score: float):
-
-
         self.contributions[int(node_id)] = float(score)
 
     def credit_reward(self, node_id: int, amount: float):
@@ -111,7 +103,7 @@ class ComposedContract:
                 arr = self.nodes[nid].contrib_history
                 arr.append(float(c))
                 if len(arr) > 200:
-                    del arr[:len(arr)-200]
+                    del arr[: len(arr) - 200]
         for nid, d in plans.get("apply_penalties", {}).items():
             if nid in self.nodes:
                 node = self.nodes[nid]
@@ -149,12 +141,14 @@ class ComposedContract:
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
 
-        global_params = None
+        global_params = self.prev_global
+
         if updates:
             filtered_updates = [u for u in updates if u.node_id not in detected_ids]
             admitted_ids = [u.node_id for u in filtered_updates]
             print(f"Admitted client ids: {admitted_ids}")
             try:
+
                 global_params = self.aggregator.aggregate(
                     filtered_updates,
                     prev_global=self.prev_global,
@@ -191,3 +185,4 @@ class ComposedContract:
         self.rewards.clear()
 
         return out
+

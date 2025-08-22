@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, json, random, os
+import argparse, json, random, os, logging, time, shutil
 import numpy as np
 
 from flsim.config import build_contract_from_yaml
@@ -30,7 +30,8 @@ def simulate_updates(n_nodes:int, dim:int, true_malicious:set[int], benign_mu=1.
     return updates
 
 def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:int, dim:int, out:str|None,
-        use_flower: bool=False, dataset: str='cifar10', model: str='logreg',iid: bool=True, alpha: float=0.5, split: str='train', epochs:int=10, batch:int=64, lr:float=0.1):
+        use_flower: bool=False, dataset: str='cifar10', model: str='logreg',iid: bool=True, alpha: float=0.5, split: str='train', epochs:int=10, batch:int=64, lr:float=0.1,
+        log_dir: str = "runs", retain_logs: bool = True):
     np.random.seed(seed); random.seed(seed)
     
     # build contract from YAML
@@ -44,7 +45,10 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
     mcount = max(0, int(round(nodes * float(malicious_ratio))))
     mcount = min(nodes, mcount)
     true_mal = set(random.sample(range(1, nodes+1), k=mcount))
-    print(f"True malicious nodes: {sorted(true_mal)}")
+
+    if not retain_logs and os.path.exists(log_dir):
+        shutil.rmtree(log_dir)
+    os.makedirs(log_dir, exist_ok=True)
 
     # Load client dataset partitions and global evaluation split
 
@@ -63,7 +67,18 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
 
     results = []
     # Run training rounds
+    logger = logging.getLogger("flsim")
+    logger.setLevel(logging.INFO)
+
     for r in range(1, rounds + 1):
+
+        round_id = f"round_{r}_{int(time.time()*1000)}"
+        round_dir = os.path.join(log_dir, round_id)
+        os.makedirs(round_dir, exist_ok=True)
+
+        handler = logging.FileHandler(os.path.join(round_dir, "fl.log"))
+        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s:%(message)s"))
+        logger.handlers = [handler]
 
         # Local training per client on their partition
         updates, reference_global = train_locally_on_partitions(
@@ -76,13 +91,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
             seed=42 + r,
         )
 
-        # Ensure the contract's baseline matches the parameters used for training
-        if contract.prev_global is None:
-            contract.prev_global = reference_global
-        else:
-            contract.prev_global = global_params
+        logger.info(f"Round {r} updates: {len(updates)} clients")
 
-        print(f"Round {r} updates: {len(updates)} clients")
         # FL pipeline using the existing contract (detection/aggregation/etc.)
         
         # Set features for each node based on updates
@@ -95,19 +105,22 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
             contract.set_contribution(u.node_id, float(u.metrics["acc"])) 
             contract.credit_reward(u.node_id, 10.0 * float(u.metrics["acc"])) 
     
-        print(f"Running {rounds} rounds with {nodes} nodes, malicious ratio {malicious_ratio}, seed {seed}, dim {dim}")
-        print(f"True malicious nodes: {sorted(true_mal)}")
+        logger.info(f"Running {rounds} rounds with {nodes} nodes, malicious ratio {malicious_ratio}, seed {seed}, dim {dim}")
+        logger.info(f"True malicious nodes: {sorted(true_mal)}")
 
         # print("\n", updates)
         # Run the settlement round with the current updates
         res = contract.run_round(r, updates=updates, true_malicious=true_mal)
-        global_params = res["global_params"]
-        contract.prev_global = global_params
-        print(f"Round {r} results: {res}")
+
+        logger.info(f"Round {r} results: {res}")
 
         results.append(res)
 
         summary = contract.metrics.summary()
+        logger.info(f"Summary: {summary[-1] if summary else {}}")
+
+        logger.removeHandler(handler)
+        handler.close()
         # out_obj = {"results": results, "summary": summary, "config": config_path, "true_malicious": sorted(true_mal),
                 # "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
         # print(f"Final summary: {summary[-1] if summary else {}}{out_obj}")
@@ -140,10 +153,28 @@ def main():
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--lr", type=float, default=0.1)
 
+    ap.add_argument("--log-dir", type=str, default="runs", help="Base directory to store logs")
+    ap.add_argument("--clear-log-dir", action="store_true", help="Remove existing log directory before running")
+
 
     args = ap.parse_args()
-    run(args.config, rounds=args.rounds, nodes=args.nodes, malicious_ratio=args.malicious_ratio, seed=args.seed, dim=args.dim, out=args.out,
-        use_flower=args.use_flower, dataset=args.dataset, model=args.model, iid=args.iid, alpha=args.alpha, split=args.split)
+    run(
+        args.config,
+        rounds=args.rounds,
+        nodes=args.nodes,
+        malicious_ratio=args.malicious_ratio,
+        seed=args.seed,
+        dim=args.dim,
+        out=args.out,
+        use_flower=args.use_flower,
+        dataset=args.dataset,
+        model=args.model,
+        iid=args.iid,
+        alpha=args.alpha,
+        split=args.split,
+        log_dir=args.log_dir,
+        retain_logs=not args.clear_log_dir,
+    )
 
 if __name__ == "__main__":
     main()
