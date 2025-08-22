@@ -46,7 +46,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
     true_mal = set(random.sample(range(1, nodes+1), k=mcount))
     print(f"True malicious nodes: {sorted(true_mal)}")
 
-    # Load client dataset partitions (X, y) along with global eval set
+    # Load client dataset partitions and global evaluation split
+
     Xp, yp, D, K, X_eval, y_eval = load_flower_arrays(
         dataset=dataset,
         n_clients=nodes,

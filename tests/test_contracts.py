@@ -12,13 +12,16 @@ def test_selection_size_and_cooldown():
         assert c.cooldowns[nid] >= 1
 
 def test_settlement_penalty_applied():
-    c = ComposedContract(ContractConfig(committee_size=3, detection="flame", settlement="plans_engine"))
+    c = ComposedContract(
+        ContractConfig(committee_size=3, detection="flame", settlement="plans_engine"),
+        strategy_params={"detection": {"min_points": 5}},
+    )
     for nid in range(1, 5):
         c.register_node(nid, stake=100.0, reputation=50.0)
     for nid in range(1, 5):
         vec = np.ones(10) * (100.0 if nid == 1 else 1.0)
         c.set_features(nid, flat_update=vec, claimed_acc=0.9, eval_acc=0.85)
-        c.set_contribution(nid, 0.9)
+        c.set_contribution(nid, 0.0 if nid == 1 else 0.9)
         c.credit_reward(nid, 10.0)
     # Force detection to mark node 1 as malicious
     c.detector.detect = lambda feats, scores: {1: True}
@@ -28,6 +31,7 @@ def test_settlement_penalty_applied():
 def test_flame_aggregation_shape():
     from flsim.aggregation.flame import FlameAggregation
     agg = FlameAggregation(percentile=0.9, use_noise=False)
+
     ups = [
         ModelUpdate(
             node_id=i,
@@ -38,6 +42,7 @@ def test_flame_aggregation_shape():
         for i in range(1, 6)
     ]
     out = agg.aggregate(ups, prev_global=np.zeros(5), admitted_ids=[1,2,3,4,5])
+
     if isinstance(out, dict):
         out_vec = np.concatenate([v.ravel() for v in out.values()], axis=0)
     else:

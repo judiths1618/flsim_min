@@ -33,12 +33,11 @@ class ComposedContract:
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
         self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
         sel_params = {
-
             "committee_size": self.cfg.committee_size,
             "rep_exponent": self.cfg.rep_exponent,
             "cooldown": self.cfg.committee_cooldown,
+            **(strategy_params or {}).get("selection", {}),
         }
-       
         self.selector = SELECTION.get(self.cfg.selection)(**sel_params)
 
         self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
@@ -134,7 +133,7 @@ class ComposedContract:
 
     def run_round(self, round_idx: int, updates: Optional[List[ModelUpdate]] = None,
                   true_malicious: Optional[Sequence[int]] = None):
-        
+
         print(f"Selected committee: {self.select_committee()} for round {round_idx}")
         plans = self.settlement.run(
             round_idx,
@@ -162,6 +161,7 @@ class ComposedContract:
                     admitted_ids=admitted_ids,
 
                 )
+
             except TypeError:
                 try:
                     global_params = self.aggregator.aggregate(
@@ -171,11 +171,9 @@ class ComposedContract:
                     global_params = self.aggregator.aggregate(filtered_updates)
             self.prev_global = global_params
 
-        
         truth_set: Set[int] = set(map(int, true_malicious or []))
         self.metrics.log(round_idx, detected_ids, truth_set)
         print(f"[Round {round_idx}] Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}")
-
 
         out = {
             "round": round_idx,
