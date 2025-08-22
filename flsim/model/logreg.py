@@ -90,14 +90,20 @@ class LogisticRegression(BaseModel):
         acc = float(np.mean(preds == y)) if N > 0 else float("nan")
         loss, _ = self._batch_grad(X, y)
 
-        nan = "unknown"
-        # Optional val metrics
+        # Optional validation metrics
         if X_val is not None and y_val is not None and y_val.size > 0:
             v_logits = self.predict_logits(X_val)
             v_preds = np.argmax(_softmax(v_logits), axis=1)
             v_acc = float(np.mean(v_preds == y_val))
-            metrics = {"loss": float(loss), "train acc": float(acc), "n": float(N)}
         else:
-            metrics = {"loss": float(loss), "train acc": float(acc), "n": float(N)}
+            v_acc = float("nan")
+
+        metrics = {
+            "loss": float(loss),
+            "acc": float(acc),
+            "train_acc": float(acc),
+            "val_acc": v_acc,
+            "n": float(N),
+        }
         print("logreg: ", metrics)
         return metrics
