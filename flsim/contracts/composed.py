@@ -32,7 +32,13 @@ class ComposedContract:
         self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
         self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
-        self.selector = SELECTION.get(self.cfg.selection)(**(strategy_params or {}).get('selection', {}))
+        sel_params = {
+            "committee_size": self.cfg.committee_size,
+            "cooldown": self.cfg.committee_cooldown,
+            "rep_exponent": self.cfg.rep_exponent,
+        }
+        sel_params.update((strategy_params or {}).get('selection', {}))
+        self.selector = SELECTION.get(self.cfg.selection)(**sel_params)
         self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
         self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**(strategy_params or {}).get('aggregation', {}))
 
@@ -133,7 +139,7 @@ class ComposedContract:
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
         
-        # global_params = None
+        global_params = self.prev_global  # carry over previous global parameters
         if updates:
             admitted_ids = [u.node_id for u in updates if u.node_id not in set(detected_ids)]
             print(f"Admitted client ids: {admitted_ids}")
@@ -153,7 +159,7 @@ class ComposedContract:
         out = {
             "round": round_idx,
             "committee": self.committee,
-            "global_params": global_params,
+            "global_params": global_params,  # may remain from previous round
             "balances": dict(self.balances),
             "reputations": {nid: n.reputation for nid, n in self.nodes.items()},
             "detected": sorted(detected_ids),
@@ -164,7 +170,5 @@ class ComposedContract:
         self.features.clear()
         self.contributions.clear()
         self.rewards.clear()
-
-        
 
         return out
