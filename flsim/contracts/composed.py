@@ -33,14 +33,14 @@ class ComposedContract:
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
         self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
         sel_params = {
+
             "committee_size": self.cfg.committee_size,
             "rep_exponent": self.cfg.rep_exponent,
             "cooldown": self.cfg.committee_cooldown,
         }
        
-        sel_params.update((strategy_params or {}).get('selection', {}))
-
         self.selector = SELECTION.get(self.cfg.selection)(**sel_params)
+
         self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
         self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**(strategy_params or {}).get('aggregation', {}))
 
@@ -149,8 +149,6 @@ class ComposedContract:
         )
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
-
-        
 
         global_params = None
         if updates:
