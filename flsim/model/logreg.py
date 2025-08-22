@@ -105,5 +105,5 @@ class LogisticRegression(BaseModel):
             "val_acc": v_acc,
             "n": float(N),
         }
-        print("logreg: ", metrics)
+        # print("logreg: ", metrics)
         return metrics

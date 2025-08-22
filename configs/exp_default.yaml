@@ -11,12 +11,14 @@ detection:
     detect_score_thresh: 0.05
 
 aggregation:
-  name: flame_agg
-  params:
-    percentile: 0.9
-    epsilon: 8.0
-    delta: 1e-5
-    use_noise: true
+  # name: flame_agg
+  name: fedavg
+  # params:
+  #   percentile: 0.9
+  #   epsilon: 8.0
+  #   delta: 1e-5
+  #   use_clipping: false
+  #   use_noise: false
 
 selection:
   name: stratified_softmax

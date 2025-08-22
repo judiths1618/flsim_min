@@ -91,9 +91,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
             lr=lr,
             seed=42 + r,
         )
-        # Ensure the contract's baseline matches the parameters used for training
-        prev = getattr(contract, "prev_global", None)
-        contract.prev_global = reference_global if prev is None else global_params
+        # Use the parameters employed for local training as the baseline for aggregation
+        contract.prev_global = reference_global
         global_params = reference_global
 
         logger.info(f"Round {r} updates: {len(updates)} clients")
@@ -102,8 +101,15 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         
         # Set features for each node based on updates
         for u in updates:
-            contract.set_features(u.node_id, flat_update=u.params, claimed_acc=float(u.metrics.get("acc")),
-                           eval_acc=float(u.metrics.get("val_acc")))
+            claimed = u.metrics.get("acc")
+            val = u.metrics.get("val_acc")
+            contract.set_features(
+                u.node_id,
+                flat_update=u.params,
+                claimed_acc=float(claimed) if claimed is not None else None,
+                eval_acc=float(val) if val is not None else None,
+            )
+        
         
         # Set contributions and credit rewards 
         for u in updates:
@@ -117,10 +123,17 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         # Run the settlement round with the current updates
         res = contract.run_round(r, updates=updates, true_malicious=true_mal)
 
+        # Update global parameters for the next round (if provided) and evaluate
+        if "global_params" in res:
+            global_params = res["global_params"]
         logger.info(f"Round {r} results: {res}")
 
-        mG = evaluate_global_params(model, res["global_params"], X_eval, y_eval)
-        print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
+        try:
+            mG = evaluate_global_params(model, global_params, X_eval, y_eval)
+            print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
+        except Exception as e:
+            logger.warning(f"Global evaluation failed: {e}")
+            mG = {"acc": float("nan"), "loss": float("nan"), "n": float("nan")}
 
         results.append(res)
 
