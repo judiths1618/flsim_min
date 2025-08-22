@@ -55,6 +55,8 @@ class AggregationStrategy:
         return 1.0
 
     def aggregate(self, updates: List) -> Dict[str, np.ndarray]:
+        if not updates:
+            raise ValueError("aggregate() received no updates")
         key_order = self._key_order(updates[0].params)
         ref_map = self._validate(updates, key_order)
 
