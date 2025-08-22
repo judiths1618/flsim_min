@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Set, Any
+
+from typing import Any, Dict, List, Optional, Sequence, Set
 import numpy as np
 
 from ..core.types import NodeState, ModelUpdate
@@ -27,21 +27,22 @@ class ContractConfig:
 class ComposedContract:
     def __init__(self, cfg: ContractConfig | None = None, strategy_params: dict | None = None):
         self.cfg = cfg or ContractConfig()
-        sp = strategy_params or {}
-        self.detector = DETECTION.get(self.cfg.detection)(**sp.get("detection", {}))
-        self.contrib = CONTRIB.get(self.cfg.contribution)(**sp.get("contribution", {}))
-        self.reward = REWARD.get(self.cfg.reward)(**sp.get("reward", {}))
-        self.penalty = PENALTY.get(self.cfg.penalty)(**sp.get("penalty", {}))
-        self.reputation = REPUTATION.get(self.cfg.reputation)(**sp.get("reputation", {}))
+
+        self.detector = DETECTION.get(self.cfg.detection)(**(strategy_params or {}).get('detection', {}))
+        self.contrib = CONTRIB.get(self.cfg.contribution)(**(strategy_params or {}).get('contribution', {}))
+        self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
+        self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
+        self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
         sel_params = {
             "committee_size": self.cfg.committee_size,
-            "cooldown": self.cfg.committee_cooldown,
             "rep_exponent": self.cfg.rep_exponent,
+            "cooldown": self.cfg.committee_cooldown,
+            **(strategy_params or {}).get("selection", {}),
         }
-        sel_params.update(sp.get("selection", {}))
         self.selector = SELECTION.get(self.cfg.selection)(**sel_params)
-        self.settlement = SETTLEMENT.get(self.cfg.settlement)(**sp.get("settlement", {}))
-        self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**sp.get("aggregation", {}))
+
+        self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
+        self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**(strategy_params or {}).get('aggregation', {}))
 
         self.nodes: Dict[int, NodeState] = {}
         self.features: Dict[int, Dict[str, float]] = {}
@@ -124,6 +125,7 @@ class ComposedContract:
 
     def run_round(self, round_idx: int, updates: Optional[List[ModelUpdate]] = None,
                   true_malicious: Optional[Sequence[int]] = None):
+
         print(f"Selected committee: {self.select_committee()} for round {round_idx}")
         plans = self.settlement.run(
             round_idx,
@@ -140,13 +142,27 @@ class ComposedContract:
         print(f"detected ids: {detected_ids}")
 
         global_params = self.prev_global
+
         if updates:
-            admitted_ids = [u.node_id for u in updates if u.node_id not in set(detected_ids)]
+            filtered_updates = [u for u in updates if u.node_id not in detected_ids]
+            admitted_ids = [u.node_id for u in filtered_updates]
             print(f"Admitted client ids: {admitted_ids}")
             try:
-                global_params = self.aggregator.aggregate(updates, prev_global=self.prev_global, admitted_ids=admitted_ids)
+
+                global_params = self.aggregator.aggregate(
+                    filtered_updates,
+                    prev_global=self.prev_global,
+                    admitted_ids=admitted_ids,
+
+                )
+
             except TypeError:
-                global_params = self.aggregator.aggregate(updates)
+                try:
+                    global_params = self.aggregator.aggregate(
+                        filtered_updates, prev_global=self.prev_global
+                    )
+                except TypeError:
+                    global_params = self.aggregator.aggregate(filtered_updates)
             self.prev_global = global_params
 
         truth_set: Set[int] = set(map(int, true_malicious or []))
@@ -156,7 +172,7 @@ class ComposedContract:
         out = {
             "round": round_idx,
             "committee": self.committee,
-            "global_params": global_params,
+            "global_params": global_params,  # may remain from previous round
             "balances": dict(self.balances),
             "reputations": {nid: n.reputation for nid, n in self.nodes.items()},
             "detected": sorted(detected_ids),

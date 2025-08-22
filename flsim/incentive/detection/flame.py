@@ -92,12 +92,14 @@ class FlameDetector:
             return {int(n): (float(scores.get(n, 0.0)) < self.detect_score_thresh) for n in keys}
 
         norms = np.linalg.norm(X, axis=1)
-        q1, q3 = np.percentile(norms, [25, 75])
-        iqr = max(1e-8, float(q3 - q1))
-        tau = q3 + 1.5 * iqr
-        mag_flags = norms > tau
-        if np.any(mag_flags):
-            flagged = {ids[i]: bool(mag_flags[i]) for i in range(len(ids))}
+
+        med = float(np.median(norms))
+        iqr = np.subtract(*np.percentile(norms, [75, 25]))
+        thresh = med + 1.5 * max(1e-8, float(iqr))
+        norm_flags = norms > thresh
+        if np.any(norm_flags):
+            flagged = {ids[i]: bool(norm_flags[i]) for i in range(len(ids))}
+
             for nid in (set(scores.keys()) - set(ids)):
                 flagged[int(nid)] = bool(float(scores.get(nid, 0.0)) < self.detect_score_thresh)
             return flagged
