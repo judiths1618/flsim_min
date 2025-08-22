@@ -18,8 +18,12 @@ def test_run_experiment_smoke(tmp_path):
         for cid, part in partitions.items():
             assert part[2] is X_eval
             assert part[3] is y_eval
-        updates = [ModelUpdate(node_id=cid, params=np.zeros(D), metrics={"acc": 1.0}) for cid in partitions]
-        return updates, {"w": np.zeros(D)}
+        updates = [
+            ModelUpdate(node_id=cid, params=np.zeros(D), metrics={"acc": 1.0, "val_acc": 1.0})
+            for cid in partitions
+        ]
+        global_params = {"W": np.zeros((D, K)), "b": np.zeros(K)}
+        return updates, global_params
 
     class DummyContract:
         def __init__(self):
@@ -38,7 +42,7 @@ def test_run_experiment_smoke(tmp_path):
             pass
 
         def run_round(self, r, updates, true_malicious):
-            return {"round": r}
+            return {"round": r, "global_params": {"W": np.zeros((D, K)), "b": np.zeros(K)}}
 
     with patch("flsim.run_experiment.load_flower_arrays", return_value=(Xp, yp, D, K, X_eval, y_eval)), \
          patch("flsim.run_experiment.train_locally_on_partitions", side_effect=fake_train_locally_on_partitions), \

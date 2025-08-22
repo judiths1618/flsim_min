@@ -5,4 +5,4 @@ from .base import BaseModel, register_model
 
 # Import built-in models so their registration executes on package import
 from . import logreg as _logreg  # noqa: F401
-# from . import nn as _nn  # noqa: F401  # ensure "mlp" registers on import
+from . import nn as _nn  # noqa: F401  # ensure "mlp" registers on import
