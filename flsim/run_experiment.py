@@ -90,6 +90,11 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
             lr=lr,
             seed=42 + r,
         )
+        # Ensure the contract's baseline matches the parameters used for training
+        if contract.prev_global is None:
+            contract.prev_global = reference_global
+        else:
+            contract.prev_global = global_params
 
         logger.info(f"Round {r} updates: {len(updates)} clients")
 

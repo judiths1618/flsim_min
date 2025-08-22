@@ -98,8 +98,14 @@ def main():
         )
         # print(reference_global)
         print()
-        if r == 1 and getattr(contract, "prev_global", None) is None:
-            contract.prev_global = {k: v.copy() for k, v in reference_global.items()}
+                # Ensure the contract's baseline matches the parameters used for training
+        if contract.prev_global is None:
+            contract.prev_global = reference_global
+        else:
+            contract.prev_global = global_params
+
+        # if r == 1 and getattr(contract, "prev_global", None) is None:
+        #     contract.prev_global = {k: v.copy() for k, v in reference_global.items()}
 
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
@@ -120,7 +126,12 @@ def main():
         # 聚合更新
         aggregated_params = fedavg.aggregate(updates)
 
-        mG = evaluate_global_params(args.model, aggregated_params, X_eval, y_eval)
+        # res = contract.run_round(r, updates=updates, true_malicious=true_mal)
+        # global_params = res["global_params"]
+        contract.prev_global = aggregated_params
+        # print(f"Round {r} results: {res}")
+        # contract.prev_global = global_params
+        mG = evaluate_global_params(args.model, global_params, X_eval, y_eval)
         print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
 
 if __name__ == "__main__":
