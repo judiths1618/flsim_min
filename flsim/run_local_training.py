@@ -84,7 +84,7 @@ def main():
         # Local training per client on their partition
         updates, reference_global = train_locally_on_partitions(
             model_name=args.model,
-            partitions={cid: (Xp[cid], yp[cid]) for cid in Xp},
+            partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
             global_params=global_params,
             epochs=args.epochs,
             batch_size=args.batch,

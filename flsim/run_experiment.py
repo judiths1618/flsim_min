@@ -38,8 +38,8 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
     true_mal = set(random.sample(range(1, nodes+1), k=mcount))
     print(f"True malicious nodes: {sorted(true_mal)}")
 
-    # Load client dataset partitions (X, y)
-    Xp, yp, D, K = load_flower_arrays(
+    # Load client dataset partitions (X, y) along with global eval set
+    Xp, yp, D, K, X_eval, y_eval = load_flower_arrays(
         dataset=dataset,
         n_clients=nodes,
         iid=iid,
@@ -59,7 +59,7 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, seed:
         # Local training per client on their partition
         updates, reference_global = train_locally_on_partitions(
             model_name=model,
-            partitions={cid: (Xp[cid], yp[cid]) for cid in Xp},
+            partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
             global_params=global_params,
             epochs=epochs,
             batch_size=batch,
