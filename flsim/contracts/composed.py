@@ -137,15 +137,24 @@ class ComposedContract:
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
         
-        # global_params = None
+        global_params = None
         if updates:
-            admitted_ids = [u.node_id for u in updates if u.node_id not in set(detected_ids)]
+            filtered_updates = [u for u in updates if u.node_id not in detected_ids]
+            admitted_ids = [u.node_id for u in filtered_updates]
             print(f"Admitted client ids: {admitted_ids}")
             try:
-                global_params = self.aggregator.aggregate(updates, prev_global=self.prev_global, admitted_ids=admitted_ids)
-
+                global_params = self.aggregator.aggregate(
+                    filtered_updates,
+                    prev_global=self.prev_global,
+                    admitted_ids=admitted_ids,
+                )
             except TypeError:
-                global_params = self.aggregator.aggregate(updates)
+                try:
+                    global_params = self.aggregator.aggregate(
+                        filtered_updates, prev_global=self.prev_global
+                    )
+                except TypeError:
+                    global_params = self.aggregator.aggregate(filtered_updates)
             self.prev_global = global_params
 
         
@@ -168,7 +177,5 @@ class ComposedContract:
         self.features.clear()
         self.contributions.clear()
         self.rewards.clear()
-
-        
 
         return out
