@@ -32,7 +32,13 @@ class ComposedContract:
         self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
         self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
-        self.selector = SELECTION.get(self.cfg.selection)(**(strategy_params or {}).get('selection', {}))
+        sel_params = {
+            "committee_size": self.cfg.committee_size,
+            "rep_exponent": self.cfg.rep_exponent,
+            "cooldown": self.cfg.committee_cooldown,
+            **(strategy_params or {}).get("selection", {}),
+        }
+        self.selector = SELECTION.get(self.cfg.selection)(**sel_params)
         self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
         self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**(strategy_params or {}).get('aggregation', {}))
 
@@ -130,29 +136,26 @@ class ComposedContract:
 
     def run_round(self, round_idx: int, updates: Optional[List[ModelUpdate]] = None,
                   true_malicious: Optional[Sequence[int]] = None):
-        
+
         print(f"Selected committee: {self.select_committee()} for round {round_idx}")
         plans = self.settlement.run(round_idx, self.nodes, self.contributions, self.features,
                                     self.rewards, self.detector, self.reward, self.penalty, self.reputation)
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
-        
-        # global_params = None
+
+        global_params = None
         if updates:
             admitted_ids = [u.node_id for u in updates if u.node_id not in set(detected_ids)]
             print(f"Admitted client ids: {admitted_ids}")
             try:
                 global_params = self.aggregator.aggregate(updates, prev_global=self.prev_global, admitted_ids=admitted_ids)
-
             except TypeError:
                 global_params = self.aggregator.aggregate(updates)
             self.prev_global = global_params
 
-        
         truth_set: Set[int] = set(map(int, true_malicious or []))
         self.metrics.log(round_idx, detected_ids, truth_set)
         print(f"[Round {round_idx}] Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}")
-
 
         out = {
             "round": round_idx,
@@ -168,7 +171,5 @@ class ComposedContract:
         self.features.clear()
         self.contributions.clear()
         self.rewards.clear()
-
-        
 
         return out
