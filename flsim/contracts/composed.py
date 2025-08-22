@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Set
+from typing import Any, Dict, List, Optional, Sequence, Set
 import numpy as np
 
 from ..core.types import NodeState, ModelUpdate
@@ -32,7 +32,15 @@ class ComposedContract:
         self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
         self.reputation = REPUTATION.get(self.cfg.reputation)(**(strategy_params or {}).get('reputation', {}))
-        self.selector = SELECTION.get(self.cfg.selection)(**(strategy_params or {}).get('selection', {}))
+        sel_params = {
+            "committee_size": self.cfg.committee_size,
+            "rep_exponent": self.cfg.rep_exponent,
+            "cooldown": self.cfg.committee_cooldown,
+        }
+       
+        sel_params.update((strategy_params or {}).get('selection', {}))
+
+        self.selector = SELECTION.get(self.cfg.selection)(**sel_params)
         self.settlement = SETTLEMENT.get(self.cfg.settlement)(**(strategy_params or {}).get('settlement', {}))
         self.aggregator: AggregationStrategy = AGGREGATION.get(self.cfg.aggregation)(**(strategy_params or {}).get('aggregation', {}))
 
@@ -50,10 +58,6 @@ class ComposedContract:
     def register_node(self, node_id: int, *, stake: float, reputation: float):
         self.nodes[node_id] = NodeState(node_id=node_id, stake=float(stake), reputation=float(reputation))
         self.cooldowns.setdefault(node_id, 0.0)
-
-    # in flsim/contracts/composed.py
-    from typing import Any
-    # import numpy as np
 
     def set_features(self, node_id: int, **feats: Any):
         out = {}
@@ -132,11 +136,22 @@ class ComposedContract:
                   true_malicious: Optional[Sequence[int]] = None):
         
         print(f"Selected committee: {self.select_committee()} for round {round_idx}")
-        plans = self.settlement.run(round_idx, self.nodes, self.contributions, self.features,
-                                    self.rewards, self.detector, self.reward, self.penalty, self.reputation)
+        plans = self.settlement.run(
+            round_idx,
+            self.nodes,
+            self.contributions,
+            self.features,
+            self.rewards,
+            self.detector,
+            self.reward,
+            self.penalty,
+            self.reputation,
+        )
         detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
+
         
+
         global_params = None
         if updates:
             filtered_updates = [u for u in updates if u.node_id not in detected_ids]
@@ -147,6 +162,7 @@ class ComposedContract:
                     filtered_updates,
                     prev_global=self.prev_global,
                     admitted_ids=admitted_ids,
+
                 )
             except TypeError:
                 try:
@@ -166,7 +182,7 @@ class ComposedContract:
         out = {
             "round": round_idx,
             "committee": self.committee,
-            "global_params": global_params,
+            "global_params": global_params,  # may remain from previous round
             "balances": dict(self.balances),
             "reputations": {nid: n.reputation for nid, n in self.nodes.items()},
             "detected": sorted(detected_ids),
