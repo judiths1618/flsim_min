@@ -19,6 +19,11 @@ Run with Flower non-IID (Dirichlet alpha=0.3):
 ```bash
 python flsim/run_experiment.py --config configs/exp_default.yaml   --rounds 3 --nodes 8 --malicious_ratio 0.25 --dim 100   --use_flower --dataset cifar10 --alpha 0.3
 ```
+
+### Logging
+
+Each invocation of `flsim/run_experiment.py` writes round information to `runs/<round_id>/fl.log`.
+Change the base directory with `--log-dir` and remove previous logs with `--clear-log-dir`.
 # 在项目根目录
 python -m flsim.run_local_training \
   --config configs/exp_default.yaml \

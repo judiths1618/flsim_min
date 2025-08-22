@@ -28,7 +28,6 @@ def test_flame_aggregation_shape():
     agg = FlameAggregation(percentile=0.9, use_noise=False)
     ups = [ModelUpdate(node_id=i, params=np.ones(5)*i, weight=1.0) for i in range(1,6)]
     out = agg.aggregate(ups, prev_global=np.zeros(5), admitted_ids=[1,2,3,4,5])
-    import numpy as np
     if isinstance(out, dict):
         out_vec = np.concatenate([v.ravel() for v in out.values()], axis=0)
     else:
