@@ -13,12 +13,17 @@ def choose_malicious_nodes(
 ) -> Set[int]:
     """选择恶意节点集合。若提供 explicit_ids 则优先生效，否则按比例随机抽样。"""
     all_ids = sorted(set(int(i) for i in all_node_ids))
+    # print(all_ids)
     if explicit_ids is not None:
+        # print(explicit_ids)
         return {int(i) for i in explicit_ids if int(i) in all_ids}
     if mal_frac <= 0.0:
+        # print()
         return set()
     rng = np.random.default_rng(seed)
+
     k = max(1, int(np.floor(len(all_ids) * float(mal_frac))))
+    # print(mal_frac, k)
     return set(rng.choice(all_ids, size=k, replace=False).tolist())
 
 def _scale_params(params: Dict[str, np.ndarray], factor: float) -> Dict[str, np.ndarray]:

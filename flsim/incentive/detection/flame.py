@@ -85,6 +85,21 @@ class FlameDetector:
         self.dbscan_eps = float(dbscan_eps)
         self.detect_score_thresh = float(detect_score_thresh)
 
+    # def __init__(self,
+    #              percentile: float = 0.9,      # 预留，如果想用分位数替代中位数
+    #              epsilon: float = 8.0,
+    #              delta: float = 1e-5,
+    #              use_noise: bool = False,      # 建议先关闭噪声，定位核心问题
+    #              use_clipping: bool = True,    # 可一键关闭裁剪，排查影响
+    #              debug: bool = True):
+    #     self.percentile = float(np.clip(percentile, 0.5, 0.99))
+    #     self.epsilon = float(epsilon)
+    #     self.delta = float(delta)
+    #     self.use_noise = bool(use_noise)
+    #     self.use_clipping = bool(use_clipping)
+    #     self.debug = bool(debug)
+
+
     def detect(self, features: Dict[int, Dict[str, float]], scores: Dict[int, float]) -> Dict[int, bool]:
         ids, X = _flattened(features)
         if X is None or X.shape[0] < self.min_points:
@@ -142,4 +157,5 @@ class FlameDetector:
         flagged = {ids[i]: bool(flags[i]) for i in range(len(ids))}
         for nid in (set(scores.keys()) - set(ids)):
             flagged[int(nid)] = bool(float(scores.get(nid, 0.0)) < self.detect_score_thresh)
+        print("flagged: ", flagged)
         return flagged

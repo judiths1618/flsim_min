@@ -26,7 +26,7 @@ def build_contract_from_dict(cfg: Dict[str, Any]) -> ComposedContract:
     names = {}
     params = {}
     for section, default_name in [
-        ("detection", "flame"),
+        ("detection", "flame_v2"),
         ("contribution", "metric"),
         ("reward", "default"),
         ("penalty", "default"),

@@ -31,7 +31,7 @@ from flsim.attack.malicious import choose_malicious_nodes, apply_malicious_updat
 #         )
 #     return updates
 
-def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malicious_behavior: float, seed:int, dim:int, out:str|None,
+def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malicious_behavior: str, malicious_scale: float, malicious_noise_std: str, seed:int, dim:int, out:str|None,
         use_flower: bool=False, dataset: str='cifar10', model: str='logreg',iid: bool=True, alpha: float=0.5, split: str='train', epochs:int=10, batch:int=64, lr:float=0.1,
         log_dir: str = "runs", retain_logs: bool = True):
     np.random.seed(seed); random.seed(seed)
@@ -43,22 +43,12 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malic
     for nid in range(1, nodes+1):
         contract.register_node(nid, stake=100.0, reputation=50.0)
 
-    # set malicious nodes
-    # explicit = {int(x) for x in args.mal_ids.split(",") if x.strip()} if args.mal_ids else None
-    true_mal = choose_malicious_nodes(
-        all_node_ids= [client_id for client_id in Xp.keys()],
-        mal_frac=float(malicious_ratio),
-        explicit_ids={},
-        seed=42,
-    )
-    print(f"[Info] Malicious nodes: {sorted(true_mal)} (behavior={malicious_behavior})")
-
+    # record fl logs
     if not retain_logs and os.path.exists(log_dir):
         shutil.rmtree(log_dir)
     os.makedirs(log_dir, exist_ok=True)
 
     # Load client dataset partitions and global evaluation split
-
     Xp, yp, D, K, X_eval, y_eval = load_flower_arrays(
         dataset=dataset,
         n_clients=nodes,
@@ -66,40 +56,61 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malic
         alpha=alpha,
         split=split,
         flatten=True,
-        normalize=True,
+        normalize=False,
     )
 
+
+    # set malicious nodes
+    # explicit = {int(x) for x in args.mal_ids.split(",") if x.strip()} if args.mal_ids else None
+    true_mal = choose_malicious_nodes(
+        all_node_ids=[client_id for client_id in Xp.keys()],
+        mal_frac=float(malicious_ratio),
+        explicit_ids=None,
+        seed=42,
+    )
+    print(f"[Info] Malicious nodes: {sorted(true_mal)} (behavior={malicious_behavior})")
+    # exit()
     # Initialize global parameters as None (the trainer will create them based on model)
     global_params = None
 
-    results = []
-    # Run training rounds
+    # Add logger
     logger = logging.getLogger("flsim")
     logger.setLevel(logging.INFO)
 
+    results = []
     for r in range(1, rounds + 1):
 
-        round_id = f"round_{r}_{int(time.time()*1000)}"
-        round_dir = os.path.join(log_dir, round_id)
-        os.makedirs(round_dir, exist_ok=True)
+        # round_id = f"round_{r}_{int(time.time()*1000)}"
+        # round_dir = os.path.join(log_dir, round_id)
+        # os.makedirs(round_dir, exist_ok=True)
 
-        handler = logging.FileHandler(os.path.join(round_dir, "fl.log"))
-        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s:%(message)s"))
-        logger.handlers = [handler]
+        # handler = logging.FileHandler(os.path.join(round_dir, "fl.log"))
+        # handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s:%(message)s"))
+        # logger.handlers = [handler]
 
         # Local training per client on their partition
-        if true_mal is None: 
-            updates, reference_global = train_locally_on_partitions(
-                model_name=model,
-                partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
-                global_params=global_params,
-                epochs=epochs,
-                batch_size=batch,
-                lr=lr,
-                seed=42 + r,
-            )
-        else: 
-            # —— 对恶意节点应用篡改 ——
+        # Always run local training first
+        updates, reference_global = train_locally_on_partitions(
+            model_name=model,
+            partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
+            global_params=global_params,
+            epochs=epochs,
+            batch_size=batch,
+            lr=lr,
+            seed=42 + r,
+        )
+        # print(reference_global)
+        if r == 1 and getattr(contract, "prev_global", None) is None:
+            contract.prev_global = {k: v.copy() for k, v in reference_global.items()}
+
+        if global_params is None and r==1:
+            # Optional: evaluate the initial reference global before first aggregation
+            base = evaluate_global_params(model, reference_global,
+                                            X_eval, y_eval)
+            print(f"[Eval] Base global (round 0): acc={base['acc']:.4f}, loss={base['loss']:.4f}")
+    
+        # If there are malicious nodes, apply malicious updates
+        if true_mal is not None:
             updates, true_mal_round = apply_malicious_updates(
                 updates,
                 malicious_ids=true_mal,
@@ -108,10 +119,10 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malic
                 noise_std=malicious_noise_std,
                 seed=42 + r,
             )
-
+        
         # Use the parameters employed for local training as the baseline for aggregation
-        contract.prev_global = reference_global
-        global_params = reference_global
+        # contract.prev_global = reference_global
+        # global_params = reference_global
 
         logger.info(f"Round {r} updates: {len(updates)} clients")
 
@@ -121,6 +132,7 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malic
         for u in updates:
             claimed = u.metrics.get("acc")
             val = u.metrics.get("val_acc")
+            # print(u.node_id, claimed, val)
             contract.set_features(
                 u.node_id,
                 flat_update=u.params,
@@ -140,7 +152,7 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malic
         # print("\n", updates)
         # Run the settlement round with the current updates
         res = contract.run_round(r, updates=updates, true_malicious=true_mal)
-
+        print("=== Per-client test acc ===")
         # Update global parameters for the next round (if provided) and evaluate
         if "global_params" in res:
             global_params = res["global_params"]
@@ -158,11 +170,12 @@ def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malic
         summary = contract.metrics.summary()
         logger.info(f"Summary: {summary[-1] if summary else {}}")
 
-        logger.removeHandler(handler)
-        handler.close()
+        # logger.removeHandler(handler)
+        # handler.close()
+        
         # out_obj = {"results": results, "summary": summary, "config": config_path, "true_malicious": sorted(true_mal),
                 # "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
-        # print(f"Final summary: {summary[-1] if summary else {}}{out_obj}")
+        print(f"Final summary: {summary[-1] if summary else {}}")
     # if out:
     #     os.makedirs(os.path.dirname(out), exist_ok=True)
     #     with open(out, "w", encoding="utf-8") as f:
@@ -199,7 +212,7 @@ def main():
     ap.add_argument("--mal_ids", type=str, default="", help="显式恶意节点ID，逗号分隔，如 1,3,5")
     ap.add_argument("--mal_behavior", type=str, default="scale",
                     choices=["scale", "signflip", "zero", "noise"])
-    ap.add_argument("--mal_scale", type=float, default=-10.0, help="scale 行为的缩放因子")
+    ap.add_argument("--mal_scale", type=float, default=0.5, help="scale 行为的缩放因子")
     ap.add_argument("--mal_noise_std", type=float, default=0.1, help="noise 行为的噪声标准差")
     
     ap.add_argument("--defense", default="flame")
@@ -211,8 +224,8 @@ def main():
         nodes=args.nodes,
         malicious_ratio=args.mal_ratio,
         malicious_behavior=args.mal_behavior,
-        mal_scale=args.mal_scale,
-        mal_noise_std=args.mal_noise_std,
+        malicious_scale=args.mal_scale,           # <-- fixed
+        malicious_noise_std=args.mal_noise_std,   # <-- fixed
         seed=args.seed,
         dim=args.dim,
         out=args.out,
@@ -227,7 +240,7 @@ def main():
         lr=args.lr,
         log_dir=args.log_dir,
         retain_logs=not args.clear_log_dir,
-    )
+)
 
 if __name__ == "__main__":
     main()
