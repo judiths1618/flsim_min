@@ -168,9 +168,9 @@ class ComposedContract:
 
         truth_set: Set[int] = set(map(int, true_malicious or []))
         # self.metrics.log(round_idx, detected_ids, truth_set)
-        print(detected_ids)
-        exit()
-        print(f"[Round {round_idx}] Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}")
+        print(
+            f"[Round {round_idx}] Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}"
+        )
         
         out = {
             "round": round_idx,
