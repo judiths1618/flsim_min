@@ -15,8 +15,29 @@ class SettlementEnginePlans:
 
     def run(self, round_idx: int, nodes: Dict[int, NodeState], contributions: Dict[int, float], features: Dict[int, Dict[str, float]],
             pre_rewards: Dict[int, float], detector, reward_policy, penalty_policy, reputation_policy) -> Dict[str, Any]:
-        detected_res = detector.model_sift(round_idx, features, contributions, [], [])
-        detected = detected_res if isinstance(detected_res, dict) else {}
+
+        """Execute settlement planning with optional detection.
+
+        Attempts to use the detector's ``model_sift`` method when available. If the
+        method is missing or raises ``ModuleNotFoundError`` (e.g. optional
+        dependencies like ``torch`` absent), it falls back to the legacy
+        ``detect`` API and finally to an empty dict.
+        """
+        detected: Dict[int, bool] = {}
+        if hasattr(detector, "model_sift"):
+            try:  # prefer new API
+                res = detector.model_sift(round_idx, features, contributions, [], [])
+                if isinstance(res, dict):
+                    detected = res
+            except ModuleNotFoundError:
+                pass  # try legacy API below
+        if not detected and hasattr(detector, "detect"):
+            try:
+                res = detector.detect(features, contributions)
+                if isinstance(res, dict):
+                    detected = res
+            except Exception:
+                detected = {}
 
         plans: Dict[str, Any] = {
             "apply_penalties": {},

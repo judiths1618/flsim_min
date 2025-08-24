@@ -31,8 +31,11 @@ from flsim.attack.malicious import choose_malicious_nodes, apply_malicious_updat
 #         )
 #     return updates
 
-def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float, malicious_behavior: str, malicious_scale: float, malicious_noise_std: str, seed:int, dim:int, out:str|None,
-        use_flower: bool=False, dataset: str='cifar10', model: str='logreg',iid: bool=True, alpha: float=0.5, split: str='train', epochs:int=10, batch:int=64, lr:float=0.1,
+def run(config_path: str, *, rounds:int, nodes:int, malicious_ratio:float,
+        malicious_behavior: str = "none", malicious_scale: float = 1.0,
+        malicious_noise_std: float = 0.0, seed:int = 0, dim:int = 0,
+        out:str|None = None,
+        use_flower: bool=False, dataset: str='cifar10', model: str='logreg', iid: bool=True, alpha: float=0.5, split: str='train', epochs:int=10, batch:int=64, lr:float=0.1,
         log_dir: str = "runs", retain_logs: bool = True):
     np.random.seed(seed); random.seed(seed)
     
