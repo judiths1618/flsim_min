@@ -104,7 +104,7 @@ class ComposedContract:
         return float(new_rep)
 
     def apply_penalty(self, node_id: int, *, stake_mul: float | None = None, rep_mul: float | None = None) -> None:
-        node = self.nodes.get(int(node_id)-1)
+        node = self.nodes.get(int(node_id))
         if node is None:
             return
         stake_mul = float(stake_mul) if stake_mul is not None else (

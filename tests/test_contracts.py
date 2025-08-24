@@ -12,10 +12,7 @@ def test_selection_size_and_cooldown():
         assert c.cooldowns[nid] >= 1
 
 def test_settlement_penalty_applied():
-    c = ComposedContract(
-        ContractConfig(committee_size=3, detection="flame", settlement="plans_engine"),
-        strategy_params={"detection": {"min_points": 5}},
-    )
+    c = ComposedContract(ContractConfig(committee_size=3, settlement="plans_engine"))
     for nid in range(1, 5):
         c.register_node(nid, stake=100.0, reputation=50.0)
     for nid in range(1, 5):
@@ -23,10 +20,10 @@ def test_settlement_penalty_applied():
         c.set_features(nid, flat_update=vec, claimed_acc=0.9, eval_acc=0.85)
         c.set_contribution(nid, 0.0 if nid == 1 else 0.9)
         c.credit_reward(nid, 10.0)
-    # Force detection to mark node 1 as malicious
-    c.detector.model_sift = lambda *args, **kwargs: {1: True}
-    res = c.run_round(0, updates=None, true_malicious={1})
+    # Mark node 1 as malicious via detected_ids
+    res = c.run_round(1, detected_ids={1}, updates=None, true_malicious={1})
     assert isinstance(res, dict)
+    assert c.nodes[1].stake < 100.0
 
 def test_flame_aggregation_shape():
     from flsim.aggregation.flame import FlameAggregation
@@ -55,6 +52,6 @@ def test_run_round_no_updates_returns_prev_global():
     for nid in range(1, 3):
         c.register_node(nid, stake=100.0, reputation=50.0)
     updates = [ModelUpdate(node_id=1, params=np.ones(3), weight=1.0)]
-    first = c.run_round(0, updates=updates)
-    second = c.run_round(1, updates=None)
+    first = c.run_round(0, detected_ids=set(), updates=updates)
+    second = c.run_round(1, detected_ids=set(), updates=None)
     assert np.array_equal(second["global_params"], first["global_params"])
