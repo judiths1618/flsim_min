@@ -39,18 +39,16 @@ def main():
     ap.add_argument("--defense", default="flame")
     args = ap.parse_args()
 
-    # Build composed contract from YAML (unchanged)
-    # contract = build_contract_from_yaml(args.config)
-
+    # --------- Build composed contract from YAML --------
     contract = build_contract_from_yaml(args.config)
     nodes=args.clients
 
-    # Register nodes with initial stake and reputation
+    # ---------- Register nodes with initial stake and reputation ----------
     for nid in range(1, nodes+1):
         contract.register_node(nid, stake=100.0, reputation=50.0)
     
 
-    # Load client partitions (X, y)
+    # ---------- Load client partitions (X, y) -----------
     Xp, yp, D, K, X_eval, y_eval = load_flower_arrays(
         dataset=args.dataset,
         n_clients=args.clients,
@@ -58,10 +56,10 @@ def main():
         alpha=args.alpha,
         split=args.split,
         flatten=True,
-        normalize=False,
+        normalize=True,
     )
 
-    # set malicious nodes
+    # -------- set malicious nodes -----------
     explicit = {int(x) for x in args.mal_ids.split(",") if x.strip()} if args.mal_ids else None
     true_mal = choose_malicious_nodes(
         all_node_ids= [client_id for client_id in Xp.keys()],
@@ -72,14 +70,12 @@ def main():
     print(f"[Info] Malicious nodes: {sorted(true_mal)} (behavior={args.mal_behavior})")
 
 
-    # Initialize global parameters as None (the trainer will create them based on model)
+    # ------------- Initialize global parameters as None (the trainer will create them based on model) -------------
     global_params = None
-    # run_local_training.py 的训练循环里，在第一次调用 run_round 之前
 
 
     results = []
     for r in range(1, args.rounds + 1):
- 
         # Local training per client on their partition
         updates, reference_global = train_locally_on_partitions(
             model_name=args.model,
@@ -90,17 +86,17 @@ def main():
             lr=args.lr,
             seed=42 + r,
         )
-        # print(reference_global)
+
         if r == 1 and getattr(contract, "prev_global", None) is None:
             contract.prev_global = {k: v.copy() for k, v in reference_global.items()}
 
         if global_params is None and r==1:
             # Optional: evaluate the initial reference global before first aggregation
-            base = evaluate_global_params(args.model, reference_global,
+            verified = evaluate_global_params(args.model, reference_global,
                                             X_eval, y_eval)
-            print(f"[Eval] Base global (round 0): acc={base['acc']:.4f}, loss={base['loss']:.4f}")
+            print(f"[Eval] Base global (round 0): acc={verified['acc']:.4f}, loss={verified['loss']:.4f}")
     
-        # 
+        # ------------- apply amlicious updates -----------------
         if true_mal is not None: 
             # —— 对恶意节点应用篡改 ——
             updates, true_mal_round = apply_malicious_updates(
@@ -111,22 +107,24 @@ def main():
                 noise_std=args.mal_noise_std,
                 seed=42 + r,
             )
-        print(f"Round {r} updates: {len(updates)} clients")
+        # print(f"Round {r} updates: {len(updates)} clients")
 
+        # ------------- Naive malicious detection method using shared model and updates and outliers ---------------
         eval_accs: list[float] = []
         eval_losses: list[float] = []
         node_ids: list[int] = []
         eval_metrics_map: dict[int, dict[str, float]] = {}
 
         # 1. Evaluate all clients and store metrics per node
+        print("=== Per-client test acc ===")
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
+            # print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
             eval_accs.append(m["acc"])
             eval_losses.append(m["loss"])
             node_ids.append(u.node_id)
             eval_metrics_map[u.node_id] = m
-        print(eval_accs)
+        # print(eval_accs)
 
         # 2. Detect malicious clients using a simple accuracy threshold
         threshold = 0.1
@@ -134,6 +132,7 @@ def main():
 
         print(f"Detected malicious clients (Threshold < {threshold}):", malicious)
 
+        # We pass the updates into the contract per its interface.
         for u in updates:
             m = eval_metrics_map[u.node_id]
             contract.set_features(
@@ -146,24 +145,18 @@ def main():
             contract.credit_reward(u.node_id, 10.0 * float(m['acc']))
 
 
-        # We pass the updates into the contract per its interface.
+        
 
         # Note: Contract will call aggregation which expects absolute params.
         result = contract.run_round(
             r, detected_ids=malicious, updates=updates, true_malicious=true_mal
         )  # malicious ground-truth here
         
-        print("=== Per-client test acc ===")
-        # for u in updates:
-        #     m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-        #     print(f"client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
-
-        mG = evaluate_global_params(args.model, result["global_params"], X_eval, y_eval)
-        print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
-
-
-        global_params2 = result["global_params"]
         
+        # ---------------- evaluate global model -----------------
+        # mG = evaluate_global_params(args.model, result["global_params"], X_eval, y_eval)
+        # print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
+        global_params2 = result["global_params"]
         eval_metrics2 = evaluate_global_params(args.model, global_params2,
                                          X_eval, y_eval)
         print(f"[Eval] Global after round {r}: acc={eval_metrics2['acc']:.4f}, loss={eval_metrics2['loss']:.4f}")
@@ -173,6 +166,7 @@ def main():
         # res = c.run_round(r, updates=updates, true_malicious=true_mal)
         # print(f"Results: {result}")
         results.append(result)
+
         # we compute it from the aggregation strategy directly (using the same as in contract).
         # agg = contract.aggregator  # type: ignore[attr-defined]
         # if hasattr(agg, "aggregate"):

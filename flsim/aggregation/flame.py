@@ -213,7 +213,7 @@ class FlameAggregation(AggregationStrategy):
                 clipped_ratio = float(np.mean([g < 0.999999 for g in gammas]))
             print(
                 "[FLAME DEBUG] | "
-                f"num_clients={len(target)} | "
+                f"num_clients={len(target)}: {ids} | "
                 f"S_t={S_t:.6g} | "
                 f"dists[min/med/max]=[{dists.min():.6g}/{np.median(dists):.6g}/{dists.max():.6g}] | "
                 f"clip={'on' if actually_clip else 'off'} (S_eff={S_eff:.6g}) | "

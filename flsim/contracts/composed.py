@@ -119,28 +119,28 @@ class ComposedContract:
             if nid in self.nodes:
                 self.nodes[nid].reputation = float(rep)
 
-        detected_map = plans.get("detected", {})
-        print(f"detected map: {detected_map}")
-        detected_ids = {int(k) for k, v in detected_map.items() if v}
-        return detected_ids
+        # detected_map = plans.get("detected", {})
+        # print(f"detected map: {detected_map}")
+        # detected_ids = {int(k) for k, v in detected_map.items() if v}
+        return "plan has been executed!\n"
 
     def run_round(self, round_idx: int, detected_ids, updates: Optional[List[ModelUpdate]] = None,
                   true_malicious: Optional[Sequence[int]] = None):
 
         print(f"Selected committee: {self.select_committee()} for round {round_idx}")
-        # plans = self.settlement.run(
-        #     round_idx,
-        #     self.nodes,
-        #     self.contributions,
-        #     self.features,
-        #     self.rewards,
-        #     # self.detected,
-        #     # detected_ids,
-        #     self.reward,
-        #     self.penalty,
-        #     self.reputation,
-        # )
-        # detected_ids = self._execute_plans(plans)
+        plans = self.settlement.run(
+            round_idx,
+            self.nodes,
+            self.contributions,
+            self.features,
+            self.rewards,
+            # self.detected,
+            # detected_ids,
+            self.reward,
+            self.penalty,
+            self.reputation,
+        )
+        executed = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
 
         global_params = self.prev_global
