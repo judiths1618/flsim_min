@@ -29,8 +29,12 @@ class SettlementEnginePlans:
                 res = detector.model_sift(round_idx, features, contributions, [], [])
                 if isinstance(res, dict):
                     detected = res
-            except ModuleNotFoundError:
-                pass  # try legacy API below
+
+            except (ModuleNotFoundError, AttributeError):
+                # Missing optional deps or detector not fully initialized
+                # (e.g. no global model attached). Fallback to legacy API.
+                pass
+
         if not detected and hasattr(detector, "detect"):
             try:
                 res = detector.detect(features, contributions)
