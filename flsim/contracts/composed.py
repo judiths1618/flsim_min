@@ -14,7 +14,7 @@ class ContractConfig:
     committee_size: int = 5
     committee_cooldown: int = 3
     rep_exponent: float = 1.0
-    detection: str = "flame_v2"
+    detection: str = "flame"
     contribution: str = "metric"
     reward: str = "default"
     penalty: str = "default"

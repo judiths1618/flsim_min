@@ -60,3 +60,7 @@ class FlameV2Detector:
                     flagged[cid] = True
 
         return flagged
+
+    # 在聚合前，对客户端提交上来的模型参数进行筛选
+	def model_sift(self, round, clients_weight, all_candidates, true_bad, true_good):
+		return tpr, tnr

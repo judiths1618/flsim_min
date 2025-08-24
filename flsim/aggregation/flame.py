@@ -16,7 +16,7 @@ def _canonical_key_order(template: Any) -> Optional[Tuple[str, ...]]:
 
 def _validate_keys_and_shapes(updates: List[ModelUpdate],
                               key_order: Optional[Tuple[str, ...]]) -> None:
-    """确保所有客户端与模板键集合、形状一致。"""
+    """确保所有客户端与模板键集合、形状一致，并无 NaN/Inf。"""
     if key_order is None:
         # 非 dict，不需要校验
         return
@@ -30,15 +30,17 @@ def _validate_keys_and_shapes(updates: List[ModelUpdate],
         ref[k] = (v.shape, v.dtype)
 
     for idx, u in enumerate(updates):
+        if getattr(u, "update_type", "weights") != "weights":
+            raise ValueError(f"Update[{idx}] has update_type={getattr(u,'update_type', None)}; FLAME expects absolute 'weights'.")
         for k in key_order:
             if k not in u.params:
                 raise ValueError(f"Client[{idx}] missing key '{k}'.")
             v = np.asarray(u.params[k])
-            shp, dt = ref[k]
+            shp, _ = ref[k]
             if v.shape != shp:
                 raise ValueError(f"Shape mismatch at key '{k}' for client[{idx}]: {v.shape} vs {shp}")
-            # 不强制 dtype 完全一致（有时 float32/float64 混用），但记录一下
-    # 通过则无异常
+            if not np.isfinite(v).all():
+                raise ValueError(f"Client[{idx}] key '{k}' contains NaN/Inf.")
 
 def _flatten_ordered(params: Any, key_order: Optional[Tuple[str, ...]]) -> Tuple[np.ndarray, Dict[str, np.dtype]]:
     """按 key_order 展平为 float64，同时记录原 dtype 用于回填。"""
@@ -96,23 +98,28 @@ def _zeros_like_params(p: Any) -> Any:
 class FlameAggregation(AggregationStrategy):
     """FLAME-style aggregation (robust median clip + optional DP noise), with:
        - canonical key order (sorted keys)
-       - strict key/shape validation
+       - strict key/shape/finite validation
        - float64 accumulation
        - first-round safeguards
+       - optional sample weighting
        - optional debug logs
     """
     def __init__(self,
-                 percentile: float = 0.9,      # 预留，如果想用分位数替代中位数
+                 percentile: float = 0.9,      # 如需用分位数替代中位数，可把 S_t = np.quantile(dists, percentile)
                  epsilon: float = 8.0,
                  delta: float = 1e-5,
-                 use_noise: bool = False,      # 建议先关闭噪声，定位核心问题
+                 use_noise: bool = False,      # 定位阶段建议关闭
                  use_clipping: bool = True,    # 可一键关闭裁剪，排查影响
+                 weight_by_samples: bool = True,  # 是否按样本数加权平均（在裁剪之后）
+                 disable_clip_if_zero_init: bool = True,  # 首轮若全局权重近零，则禁用裁剪
                  debug: bool = True):
         self.percentile = float(np.clip(percentile, 0.5, 0.99))
         self.epsilon = float(epsilon)
         self.delta = float(delta)
         self.use_noise = bool(use_noise)
         self.use_clipping = bool(use_clipping)
+        self.weight_by_samples = bool(weight_by_samples)
+        self.disable_clip_if_zero_init = bool(disable_clip_if_zero_init)
         self.debug = bool(debug)
 
     def aggregate(self,
@@ -126,81 +133,93 @@ class FlameAggregation(AggregationStrategy):
         # 1) 准备模板与有序键
         if prev_global is None:
             prev_global = _zeros_like_params(updates[0].params)
-
         key_order = _canonical_key_order(prev_global)
 
-        # 2) 强校验：所有客户端键、形状必须与模板一致
+        # 2) 强校验
         _validate_keys_and_shapes(updates, key_order)
 
         # 3) 过滤接纳集合
         ids = set(int(u.node_id) for u in updates)
         A = set(int(i) for i in (admitted_ids or [])) & ids
-        target = [u for u in updates if not A or int(u.node_id) in A]
-        if not target:
-            # 若 admitted_ids 结果为空，回退到所有
-            target = updates
+        target = [u for u in updates if not A or int(u.node_id) in A] or updates
 
-        # 4) 计算基准向量与距离分布
+        # 4) 基准与距离
         base_flat, base_dtype_map = _flatten_ordered(prev_global, key_order)
 
         def dist_to_base(u: ModelUpdate) -> float:
             w, _ = _flatten_ordered(u.params, key_order)
-            return float(np.linalg.norm(w - base_flat))
+            d = w - base_flat
+            return float(np.linalg.norm(d))
 
         dists = np.asarray([dist_to_base(u) for u in target], dtype=np.float64)
-        # 中位数（或分位数）作为 S_t 的尺度
-        S_t = float(np.median(dists))
-        # 如果 S_t 异常为 0（极端同构/首轮均等），给一个极小正数，避免数值问题
+        if not np.isfinite(dists).all():
+            raise ValueError("Distances contain NaN/Inf; check client updates.")
+
+        S_t = float(np.median(dists))  # or np.quantile(dists, self.percentile)
         if S_t == 0.0:
-            S_t = float(np.max(dists))  # 先试更宽容的尺度
-            if S_t == 0.0:
-                S_t = 1e-12
+            S_t = float(np.max(dists)) or 1e-12
 
-        # 5) 是否进行裁剪与平均
+        # 5) 裁剪与平均
         clipped_vecs = []
-        if self.use_clipping:
-            # 首轮防炸：如果 prev_global 全 0 或范数极小，裁剪容易把更新拉回去，导致学习停滞
-            # 策略：当 ||prev_global|| 很小且大多数 e_i >> 0 时，轻微放宽裁剪（提高门限或直接不裁剪）
-            base_norm = float(np.linalg.norm(base_flat))
-            loosen_clip = (base_norm < 1e-8 and np.median(dists) > 0)
-            clip_scale = 1.0 if not loosen_clip else 2.0  # 首轮稍微放松
-            S_eff = S_t * clip_scale
+        gammas = []
+        # 首轮防炸：若全局范数近 0，且开启 disable_clip_if_zero_init，则不裁剪
+        base_norm = float(np.linalg.norm(base_flat))
+        actually_clip = self.use_clipping and not (self.disable_clip_if_zero_init and base_norm < 1e-12)
 
-            for u in target:
-                w_u, _ = _flatten_ordered(u.params, key_order)
+        # 若裁剪，是否放宽门限
+        clip_scale = 1.0
+        if actually_clip and base_norm < 1e-8 and np.median(dists) > 0:
+            clip_scale = 2.0  # 轻微放宽
+        S_eff = S_t * clip_scale
+
+        for u in target:
+            w_u, _ = _flatten_ordered(u.params, key_order)
+            if actually_clip:
                 delta_u = w_u - base_flat
                 e_i = float(np.linalg.norm(delta_u))
                 gamma = 1.0 if e_i == 0.0 else min(1.0, S_eff / (e_i + 1e-12))
-                w_clip = base_flat + gamma * delta_u
-                clipped_vecs.append(w_clip)
-        else:
-            for u in target:
-                w_u, _ = _flatten_ordered(u.params, key_order)
-                clipped_vecs.append(w_u)
+                w_proc = base_flat + gamma * delta_u
+                gammas.append(gamma)
+            else:
+                w_proc = w_u
+                gammas.append(1.0)
+            clipped_vecs.append(w_proc)
 
         stacked = np.stack(clipped_vecs, axis=0).astype(np.float64, copy=False)
-        avg_flat = np.mean(stacked, axis=0)
 
-        # 6) 可选加噪（建议问题定位阶段关闭）
+        # 样本数（或权重）加权
+        if self.weight_by_samples:
+            raw_w = np.asarray([float(getattr(u, "num_samples", None) or getattr(u, "weight", 1.0)) for u in target], dtype=np.float64)
+            raw_w = np.maximum(raw_w, 0.0)
+            tot_w = float(np.sum(raw_w))
+            if not np.isfinite(tot_w) or tot_w <= 0.0:
+                raw_w[:] = 1.0
+                tot_w = float(len(target))
+            norm_w = (raw_w / tot_w).reshape(-1, 1)
+            avg_flat = np.sum(stacked * norm_w, axis=0)
+        else:
+            avg_flat = np.mean(stacked, axis=0)
+
+        # 6) 可选加噪
         if self.use_noise and self.epsilon > 0.0 and self.delta > 0.0:
             sigma = (S_t / self.epsilon) * np.sqrt(2.0 * np.log(1.25 / self.delta))
             if sigma > 0.0:
                 avg_flat = avg_flat + np.random.normal(loc=0.0, scale=float(sigma), size=avg_flat.shape)
 
-        # 7) 调试信息（只打印统计，不暴露大数组）
+        # 7) 调试信息（与裁剪路径完全一致的参数）
         if self.debug:
-            clipped_flags = []
-            if self.use_clipping:
-                # 被裁剪的判定：gamma<1 等价于 e_i > S_eff
-                S_eff = S_t * (2.0 if (float(np.linalg.norm(base_flat)) < 1e-8 and np.median(dists) > 0) else 1.0)
-                clipped_flags = [dist > S_eff + 1e-12 for dist in dists]
+            clipped_ratio = 0.0
+            if actually_clip:
+                clipped_ratio = float(np.mean([g < 0.999999 for g in gammas]))
             print(
                 "[FLAME DEBUG] | "
                 f"num_clients={len(target)} | "
                 f"S_t={S_t:.6g} | "
                 f"dists[min/med/max]=[{dists.min():.6g}/{np.median(dists):.6g}/{dists.max():.6g}] | "
-                f"clipped_ratio={(np.mean(clipped_flags) if clipped_flags else 0):.3f} | "
-                f"use_clipping={self.use_clipping} | use_noise={self.use_noise}"
+                f"clip={'on' if actually_clip else 'off'} (S_eff={S_eff:.6g}) | "
+                f"clipped_ratio={clipped_ratio:.3f} | "
+                f"weighted={'yes' if self.weight_by_samples else 'no'} | "
+                f"use_noise={self.use_noise}"
             )
 
         # 8) 回填结构并恢复 dtype
