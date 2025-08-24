@@ -79,8 +79,7 @@ def main():
 
     results = []
     for r in range(1, args.rounds + 1):
-
-        
+ 
         # Local training per client on their partition
         updates, reference_global = train_locally_on_partitions(
             model_name=args.model,
@@ -113,21 +112,48 @@ def main():
                 seed=42 + r,
             )
         print(f"Round {r} updates: {len(updates)} clients")
-        # FL pipeline using the existing contract (detection/aggregation/etc.)
+        
+        eval_accs = []
+        eval_losses = []
+        node_ids = []
+
+        # 1. Evaluate all clients
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-            print(f"client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
+            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
+            eval_accs.append(m["acc"])
+            eval_losses.append(m["loss"])
+            node_ids.append(u.node_id)
+        print(eval_accs)
+        # 2. Detect malicious clients using IQR
+        
+        accs = np.array(eval_accs)
+        q1, q3 = np.percentile(accs, [25, 75])
+        iqr = q3 - q1
 
-            contract.set_features(u.node_id, flat_update=u.params, claimed_acc=float(u.metrics.get("acc")))
-        #                    eval_acc=float(u.metrics.get("eval_acc", 0.9)))
+
+        threshold = 0.2
+        # malicious = [i for i, acc in enumerate(eval_accs) if acc < threshold]
+        malicious = {int(k) for k, acc in enumerate(eval_accs) if acc < threshold}
+        
+        print("Detected malicious clients (Threshold < 0.1):", malicious)
+
+        # exit() 
+            
         for u in updates:
-            contract.set_contribution(u.node_id, float(u.metrics["acc"])) 
-            contract.credit_reward(u.node_id, 10.0 * float(u.metrics["acc"])) 
+            contract.set_features(
+                u.node_id, 
+                flat_update=u.params, 
+                claimed_acc=float(u.metrics.get("acc")),
+                eval_acc=float(m['acc']))
+            contract.set_contribution(u.node_id, float(m['acc'])) 
+            contract.credit_reward(u.node_id, 10.0 * float(m['acc'])) 
+
 
         # We pass the updates into the contract per its interface.
 
         # Note: Contract will call aggregation which expects absolute params.
-        result = contract.run_round(r, updates, true_malicious=true_mal)  # no malicious ground-truth here
+        result = contract.run_round(r, updates, true_malicious=true_mal)  # malicious ground-truth here
         
         print("=== Per-client test acc ===")
         # for u in updates:

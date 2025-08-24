@@ -14,10 +14,10 @@ aggregation:
   # name: fedavg
   name: flame_agg
   params:
-    percentile: 0.8
+    percentile: 0.9
     epsilon: 8.0
     delta: 1e-5
-    use_clipping: False
+    use_clipping: True
     use_noise: False
 
 selection:

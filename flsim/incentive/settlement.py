@@ -14,7 +14,7 @@ class SettlementEnginePlans:
         self.p = params or SettlementParams(**kwargs) if kwargs else (params or SettlementParams())
 
     def run(self, round_idx: int, nodes: Dict[int, NodeState], contributions: Dict[int, float], features: Dict[int, Dict[str, float]],
-            pre_rewards: Dict[int, float], detector, reward_policy, penalty_policy, reputation_policy) -> Dict[str, Any]:
+            pre_rewards: Dict[int, float], detected, reward_policy, penalty_policy, reputation_policy) -> Dict[str, Any]:
 
         """Execute settlement planning with optional detection.
 
@@ -23,25 +23,26 @@ class SettlementEnginePlans:
         dependencies like ``torch`` absent), it falls back to the legacy
         ``detect`` API and finally to an empty dict.
         """
-        detected: Dict[int, bool] = {}
-        if hasattr(detector, "model_sift"):
-            try:  # prefer new API
-                res = detector.model_sift(round_idx, features, contributions, [], [])
-                if isinstance(res, dict):
-                    detected = res
+        # detected: Dict[int, bool] = {}
+        # if hasattr(detector, "model_sift"):
+        #     try:  # prefer new API
+        #         res = detector.model_sift(round_idx, features, [], [])
 
-            except (ModuleNotFoundError, AttributeError):
-                # Missing optional deps or detector not fully initialized
-                # (e.g. no global model attached). Fallback to legacy API.
-                pass
+        #         if isinstance(res, dict):
+        #             detected = res
 
-        if not detected and hasattr(detector, "detect"):
-            try:
-                res = detector.detect(features, contributions)
-                if isinstance(res, dict):
-                    detected = res
-            except Exception:
-                detected = {}
+        #     except (ModuleNotFoundError, AttributeError):
+        #         # Missing optional deps or detector not fully initialized
+        #         # (e.g. no global model attached). Fallback to legacy API.
+        #         pass
+
+        # if hasattr(detector, "detect"):
+        #     try:
+        #         res = detector.detect(features, contributions)
+        #         if isinstance(res, dict):
+        #             detected = res
+        #     except Exception:
+        #         detected = {}
 
         plans: Dict[str, Any] = {
             "apply_penalties": {},

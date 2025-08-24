@@ -14,7 +14,7 @@ class ContractConfig:
     committee_size: int = 5
     committee_cooldown: int = 3
     rep_exponent: float = 1.0
-    detection: str = "flame"
+    # detection: str = "flame"
     contribution: str = "metric"
     reward: str = "default"
     penalty: str = "default"
@@ -28,7 +28,7 @@ class ComposedContract:
     def __init__(self, cfg: ContractConfig | None = None, strategy_params: dict | None = None):
         self.cfg = cfg or ContractConfig()
 
-        self.detector = DETECTION.get(self.cfg.detection)(**(strategy_params or {}).get('detection', {}))
+        # self.detector = DETECTION.get(self.cfg.detection)(**(strategy_params or {}).get('detection', {}))
         self.contrib = CONTRIB.get(self.cfg.contribution)(**(strategy_params or {}).get('contribution', {}))
         self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
@@ -120,25 +120,27 @@ class ComposedContract:
                 self.nodes[nid].reputation = float(rep)
 
         detected_map = plans.get("detected", {})
+        print(f"detected map: {detected_map}")
         detected_ids = {int(k) for k, v in detected_map.items() if v}
         return detected_ids
 
-    def run_round(self, round_idx: int, updates: Optional[List[ModelUpdate]] = None,
+    def run_round(self, round_idx: int, detected_ids, updates: Optional[List[ModelUpdate]] = None,
                   true_malicious: Optional[Sequence[int]] = None):
 
         print(f"Selected committee: {self.select_committee()} for round {round_idx}")
-        plans = self.settlement.run(
-            round_idx,
-            self.nodes,
-            self.contributions,
-            self.features,
-            self.rewards,
-            self.detector,
-            self.reward,
-            self.penalty,
-            self.reputation,
-        )
-        detected_ids = self._execute_plans(plans)
+        # plans = self.settlement.run(
+        #     round_idx,
+        #     self.nodes,
+        #     self.contributions,
+        #     self.features,
+        #     self.rewards,
+        #     # self.detected,
+        #     # detected_ids,
+        #     self.reward,
+        #     self.penalty,
+        #     self.reputation,
+        # )
+        # detected_ids = self._execute_plans(plans)
         print(f"detected ids: {detected_ids}")
 
         global_params = self.prev_global
@@ -165,9 +167,11 @@ class ComposedContract:
             self.prev_global = global_params
 
         truth_set: Set[int] = set(map(int, true_malicious or []))
-        self.metrics.log(round_idx, detected_ids, truth_set)
+        # self.metrics.log(round_idx, detected_ids, truth_set)
+        print(detected_ids)
+        exit()
         print(f"[Round {round_idx}] Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}")
-
+        
         out = {
             "round": round_idx,
             "committee": self.committee,

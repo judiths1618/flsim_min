@@ -64,7 +64,7 @@ def apply_malicious_updates(
             continue
 
         p = u.params
-        if behavior == "scale":
+        if behavior == "scale": 
             p2 = _scale_params(p, factor=float(scale))
         elif behavior == "signflip":
             p2 = _signflip_params(p)

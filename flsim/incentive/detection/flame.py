@@ -1,27 +1,14 @@
 from __future__ import annotations
 from typing import Dict, Set
 import numpy as np
-
-# Optional heavy dependencies: make best effort to import but allow absence.
-try:  # pragma: no cover - import guard
-    import torch  # type: ignore
-except Exception:  # pragma: no cover - torch not installed
-    torch = None  # type: ignore[assignment]
-
-try:  # pragma: no cover - import guard
-    import hdbscan  # type: ignore
-except Exception:  # pragma: no cover - hdbscan not installed
-    hdbscan = None  # type: ignore[assignment]
-
-try:  # pragma: no cover - import guard
-    from sklearn.cluster import DBSCAN  # type: ignore
-except Exception:  # pragma: no cover - sklearn not installed
-    DBSCAN = None  # type: ignore[assignment]
-
+import torch
+import hdbscan  # type: ignore
+from sklearn.cluster import DBSCAN  # type: ignore
 from ...core.registry import DETECTION
 
 
 from typing import Any, Dict, List, Tuple
+import numpy as np
 
 def _to_1d_float(x: Any) -> np.ndarray:
     """Recursively flatten x -> 1D float array.
@@ -94,7 +81,6 @@ def _pairwise_euclidean(Xn: np.ndarray) -> np.ndarray:
 @DETECTION.register("flame")
 class FlameDetector:
     """FLAME-style filtering via clustering on cosine distance with fallbacks."""
-
     def __init__(self, *, min_points: int = 4, min_cluster_frac: float = 0.2, dbscan_eps: float = 0.3,
                  detect_score_thresh: float = 0.05):
         self.min_points = int(min_points)
@@ -102,10 +88,9 @@ class FlameDetector:
         self.dbscan_eps = float(dbscan_eps)
         self.detect_score_thresh = float(detect_score_thresh)
 
+
     # 在聚合前，对客户端提交上来的模型参数进行筛选
-    def model_sift(self, round, clients_weight, all_candidates, true_bad, true_good):
-        if torch is None:
-            raise ModuleNotFoundError("torch is required for model_sift")
+    def model_sift(self, clients_weight, all_candidates, true_bad, true_good):
         # 用来存储筛选后模型参数和
         weight_accumulator = {}
         for name, params in self.global_model.state_dict().items():
@@ -153,9 +138,11 @@ class FlameDetector:
                 else:
                     predict_bad.append(all_candidates[i])
 
-            print(cluster.labels_)
+            
             predict_good = set(predict_good)
             predict_bad = set(predict_bad)
+            
+            print(f"Oh Model sift: {cluster.labels_}, {predict_good}, {predict_bad}")
             true_bad = set(true_bad)
             true_good = set(true_good)
             if len(true_good) == 0 and len(predict_good) == 0:
@@ -184,7 +171,7 @@ class FlameDetector:
         elif self.conf['defense'] == 'krum':
             # 记录距离与得分
             number = 6
-            if round == 4:
+            if self.round == 4:
                 number = 7
             dis = torch.zeros(num_clients, num_clients)
             score = torch.zeros(num_clients)
@@ -249,13 +236,14 @@ class FlameDetector:
                 std = lamda * med * param.data.std()
                 noise = torch.normal(0, std, size=param.size()).cuda()
                 param.data.add_(noise)
-
+        print()
         return tpr, tnr
 
     def detect(self, features: Dict[int, Dict[str, float]], scores: Dict[int, float]) -> Dict[int, bool]:
         ids, X = _flattened(features)
         if X is None or X.shape[0] < self.min_points:
             keys = set(list(scores.keys()) + list(features.keys()))
+            print(keys)
             return {int(n): (float(scores.get(n, 0.0)) < self.detect_score_thresh) for n in keys}
 
         norms = np.linalg.norm(X, axis=1)

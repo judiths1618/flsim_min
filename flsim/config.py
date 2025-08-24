@@ -26,7 +26,7 @@ def build_contract_from_dict(cfg: Dict[str, Any]) -> ComposedContract:
     names = {}
     params = {}
     for section, default_name in [
-        ("detection", "flame_v2"),
+        # ("detection", "flame"),
         ("contribution", "metric"),
         ("reward", "default"),
         ("penalty", "default"),
@@ -43,7 +43,7 @@ def build_contract_from_dict(cfg: Dict[str, Any]) -> ComposedContract:
         committee_size=int(cfg.get("committee_size", 5)),
         committee_cooldown=int(cfg.get("committee_cooldown", 3)),
         rep_exponent=float(cfg.get("rep_exponent", 1.0)),
-        detection=names["detection"],
+        # detection=names["detection"],
         contribution=names["contribution"],
         reward=names["reward"],
         penalty=names["penalty"],
