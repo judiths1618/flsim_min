@@ -15,6 +15,7 @@ class SettlementEnginePlans:
 
     def run(self, round_idx: int, nodes: Dict[int, NodeState], contributions: Dict[int, float], features: Dict[int, Dict[str, float]],
             pre_rewards: Dict[int, float], detector, reward_policy, penalty_policy, reputation_policy) -> Dict[str, Any]:
+
         """Execute settlement planning with optional detection.
 
         Attempts to use the detector's ``model_sift`` method when available. If the
@@ -28,10 +29,12 @@ class SettlementEnginePlans:
                 res = detector.model_sift(round_idx, features, contributions, [], [])
                 if isinstance(res, dict):
                     detected = res
+
             except (ModuleNotFoundError, AttributeError):
                 # Missing optional deps or detector not fully initialized
                 # (e.g. no global model attached). Fallback to legacy API.
                 pass
+
         if not detected and hasattr(detector, "detect"):
             try:
                 res = detector.detect(features, contributions)
