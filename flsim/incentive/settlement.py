@@ -15,7 +15,8 @@ class SettlementEnginePlans:
 
     def run(self, round_idx: int, nodes: Dict[int, NodeState], contributions: Dict[int, float], features: Dict[int, Dict[str, float]],
             pre_rewards: Dict[int, float], detector, reward_policy, penalty_policy, reputation_policy) -> Dict[str, Any]:
-        detected = detector.detect(features, contributions)
+        detected_res = detector.model_sift(round_idx, features, contributions, [], [])
+        detected = detected_res if isinstance(detected_res, dict) else {}
 
         plans: Dict[str, Any] = {
             "apply_penalties": {},
