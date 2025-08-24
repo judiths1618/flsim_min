@@ -1,9 +1,28 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Sequence
+
 import numpy as np
+
 from ..core.types import NodeState
 from ..core.registry import REWARD
+
+
+def sigmoid(x: float) -> float:
+    """Standard logistic function."""
+    return float(1.0 / (1.0 + np.exp(-float(x))))
+
+
+def jain_fairness(values: Sequence[float]) -> float:
+    """Compute Jain's fairness index for a sequence of values."""
+    arr = np.asarray(list(values), dtype=float)
+    if arr.size == 0:
+        return 0.0
+    num = np.square(arr.sum())
+    den = arr.size * np.square(arr).sum() + 1e-8
+    return float(num / den)
+
 
 @dataclass
 class RewardParams:
@@ -11,72 +30,56 @@ class RewardParams:
     hist_decay: float = 0.9
     stake_weight: float = 0.4
 
+
 @REWARD.register("default")
 class DefaultReward:
     def __init__(self, params: RewardParams | None = None, **kwargs) -> None:
         self.p = params or RewardParams(**kwargs) if kwargs else (params or RewardParams())
 
-    def compute(self, node: NodeState, nodes: Dict[int, NodeState]) -> float:
-        hist = 0.0
-        recent = node.contrib_history[-5:]
-        for t, c in enumerate(reversed(recent)):
-            hist += float(c) * (self.p.hist_decay ** t)
-        total_contrib = sum(n.contrib_history[-1] if n.contrib_history else 0.0 for n in nodes.values()) + 1e-8
-        diversity = 1.0
-
-
-        return float(self.p.base_reward * ((hist / total_contrib) * (1.0 - self.p.stake_weight) + self.p.stake_weight * 1.0) * diversity)
-        
-        # To refine
-        """
-        Calculate the dynamic hybrid reward for a node based on its effective stake, 
-        time-decayed contribution history, diversity fairness, and committee membership.
-
-        Parameters:
-            node (Node): The node for which the reward is calculated.
-            avg_rep (float): Average reputation across all nodes.
-
-        Returns:
-            float: The final reward allocated to the node.
-        """
-
-        # === Step 0: Participation check ===
+    def compute(
+        self,
+        node: NodeState,
+        nodes: Dict[int, NodeState],
+        *,
+        in_committee: bool = False,
+    ) -> float:
+        """Calculate reward using stake, history and fairness factors."""
         if not node.contrib_history or node.contrib_history[-1] == 0:
-            # No contribution in this round or no history at all
-            return 0.0  # or: return committee_bonus if committee_bonus is decoupled
+            return 0.0
 
-        # === Step 1: Effective stake with anti-monopoly cap: S_eff = min(S_i, 3 * avg(S)) ===
-        avg_stake = np.mean([n.stake for n in self.nodes])
-        effective_stake = min(node.stake, 3 * avg_stake)
+        avg_stake = (
+            float(np.mean([n.stake for n in nodes.values()])) if nodes else 0.0
+        )
+        effective_stake = min(node.stake, 3.0 * avg_stake)
 
-        # === Step 2: Time-decayed historical contribution: C_i^hist = sum(c_t * decay^t) ===
         recent_contribs = node.contrib_history[-5:]
         hist_contrib = sum(
-            c * (self.hist_decay_factor ** t)
-            for t, c in enumerate(reversed(recent_contribs))
+            c * (self.p.hist_decay ** t) for t, c in enumerate(reversed(recent_contribs))
         )
 
-        # === Step 3: Diversity bonus using Jain's fairness index: J(r) ===
-        reputations = [n.reputation for n in self.nodes]
-        diversity_bonus = jain_fairness(reputations)
+        reputations = [n.reputation for n in nodes.values()]
+        diversity_bonus = jain_fairness(reputations) if reputations else 0.0
+        avg_rep = float(np.mean(reputations)) if reputations else 0.0
 
-        # === Step 4: Dynamic alpha weight for stake vs. contribution ===
-        # Adaptive to system fairness and node position
         node_rep = node.reputation
-        alpha = sigmoid((avg_rep - node_rep) / 50) * self.stake_weight
-        beta = 1 - alpha
+        alpha = sigmoid((avg_rep - node_rep) / 50.0) * self.p.stake_weight
+        beta = 1.0 - alpha
 
-        # === Step 5: Committee bonus if node participated in committee this round ===
-        committee_bonus = 20 * diversity_bonus if node in self.committee_history[-1] else 0
+        committee_bonus = 20.0 * diversity_bonus if in_committee else 0.0
 
-        # === Step 6: Reward calculation based on Equation (25) ===
-        total_stake = sum(n.stake for n in self.nodes) + 1e-8
-        total_contrib = sum(n.contrib_history[-1] for n in self.nodes) + 1e-8
+        total_stake = sum(n.stake for n in nodes.values()) + 1e-8
+        total_contrib = (
+            sum(n.contrib_history[-1] if n.contrib_history else 0.0 for n in nodes.values())
+            + 1e-8
+        )
 
         reward = (
-            (alpha * self.base_reward * (effective_stake / total_stake) +
-            beta * self.base_reward * (hist_contrib / total_contrib)) * diversity_bonus
+            (
+                alpha * self.p.base_reward * (effective_stake / total_stake)
+                + beta * self.p.base_reward * (hist_contrib / total_contrib)
+            )
+            * diversity_bonus
             + committee_bonus
         )
+        return float(max(reward, 0.0))
 
-        return max(reward, 0.0)
