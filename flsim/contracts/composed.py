@@ -81,9 +81,40 @@ class ComposedContract:
     def set_contribution(self, node_id: int, score: float): # quantify the contribution score using eval acc
         print(f"Node [{node_id}]'s Score: {score}")
         self.contributions[int(node_id)] = float(score)
+        print(self.contributions)
 
-    def credit_reward(self, node_id: int, amount: float):
-        self.rewards[int(node_id)] = self.rewards.get(int(node_id), 0.0) + float(amount)
+    def credit_reward(self, node_id: int, amount: float | None = None, *, in_committee: bool = False) -> float:
+        node = self.nodes.get(int(node_id))
+        if node is None:
+            return 0.0
+        reward_amt = self.reward.compute(node, self.nodes, in_committee=in_committee)
+        if amount is not None:
+            reward_amt = float(amount)
+        self.rewards[int(node_id)] = self.rewards.get(int(node_id), 0.0) + float(reward_amt)
+        print(f"node {node_id}'s credit reward amount: {reward_amt}, {node}")
+        return float(reward_amt)
+
+    def update_reputation(self, node_id: int, contribution: float, *, current_round: int) -> float:
+        node = self.nodes.get(int(node_id))
+        if node is None:
+            return 0.0
+        new_rep = self.reputation.update(node, contribution=float(contribution), current_round=current_round)
+        self.nodes[int(node_id)].reputation = float(new_rep)
+        print(f"{node} update rep: {new_rep}")
+        return float(new_rep)
+
+    def apply_penalty(self, node_id: int, *, stake_mul: float | None = None, rep_mul: float | None = None) -> None:
+        node = self.nodes.get(int(node_id)-1)
+        if node is None:
+            return
+        stake_mul = float(stake_mul) if stake_mul is not None else (
+            1.0 - getattr(self.penalty.p, "stake_penalty_factor", 0.02)
+        )
+        rep_mul = float(rep_mul) if rep_mul is not None else (
+            1.0 - getattr(self.penalty.p, "rep_penalty_factor", 0.5)
+        )
+        node.stake = max(0.0, node.stake * stake_mul)
+        node.reputation = max(0.0, node.reputation * rep_mul)
 
     def select_committee(self):
         sel = self.selector.select(self.nodes, self.cooldowns)
@@ -95,10 +126,10 @@ class ComposedContract:
             self.cooldowns[nid] = float(self.cfg.committee_cooldown)
         return sel
 
-    def _execute_plans(self, plans: Dict):
-        for nid in plans.get("note_participation", set()):  # record participation +1
+    def _execute_plans(self, plans: Dict, *, round_idx: int):
+        for nid in plans.get("note_participation", set()):  
             if nid in self.nodes:
-                self.nodes[nid].participation += 1
+                self.nodes[nid].participation += 1  
         for nid, c in plans.get("append_contrib", {}).items():
             if nid in self.nodes:
                 arr = self.nodes[nid].contrib_history
@@ -106,19 +137,15 @@ class ComposedContract:
                 if len(arr) > 200:
                     del arr[: len(arr) - 200]
         for nid, d in plans.get("apply_penalties", {}).items():
-            if nid in self.nodes:
-                node = self.nodes[nid]
-                node.stake = max(0.0, node.stake * float(d.get("stake_mul", 1.0)))
-                node.reputation = max(0.0, node.reputation * float(d.get("rep_mul", 1.0)))
+            self.apply_penalty(nid, stake_mul=d.get("stake_mul"), rep_mul=d.get("rep_mul"))
         for nid, amt in plans.get("credit_rewards", {}).items():
             if nid in self.nodes:
                 node = self.nodes[nid]
                 a = float(amt)
                 node.stake += a
                 self.balances[nid] = self.balances.get(nid, 0.0) + a
-        for nid, rep in plans.get("set_reputations", {}).items():
-            if nid in self.nodes:
-                self.nodes[nid].reputation = float(rep)
+        for nid in plans.get("set_reputations", {}).keys():
+            self.update_reputation(nid, contribution=self.contributions.get(nid, 0.0), current_round=round_idx)
 
         # detected_map = plans.get("detected", {})
         # print(f"detected map: {detected_map}")
@@ -141,8 +168,9 @@ class ComposedContract:
             self.penalty,
             self.reputation,
         )
-        executed = self._execute_plans(plans)
-        print(f"detected ids: {detected_ids}")
+        # executed = self._execute_plans(plans)
+        executed = self._execute_plans(plans, round_idx=round_idx)
+        print(f"{executed} \n detected ids: {detected_ids}")
 
         global_params = self.prev_global
 
@@ -186,7 +214,11 @@ class ComposedContract:
         }
         self.features.clear()
         self.contributions.clear()
-        self.rewards.clear()
+        # self.rewards.clear()
+        self.rewards = {
+            int(nid): float(r)
+            for nid, r in plans.get("computed_rewards_next", {}).items()
+        }
 
         return out
 

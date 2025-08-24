@@ -81,5 +81,6 @@ class DefaultReward:
             * diversity_bonus
             + committee_bonus
         )
+        print(f"reward: {reward}\n")
         return float(max(reward, 0.0))
 
