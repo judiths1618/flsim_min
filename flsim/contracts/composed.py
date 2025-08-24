@@ -96,7 +96,7 @@ class ComposedContract:
         return sel
 
     def _execute_plans(self, plans: Dict):
-        for nid in plans.get("note_participation", set()):
+        for nid in plans.get("note_participation", set()):  # record participation +1
             if nid in self.nodes:
                 self.nodes[nid].participation += 1
         for nid, c in plans.get("append_contrib", {}).items():
