@@ -24,7 +24,7 @@ def test_settlement_penalty_applied():
         c.set_contribution(nid, 0.0 if nid == 1 else 0.9)
         c.credit_reward(nid, 10.0)
     # Force detection to mark node 1 as malicious
-    c.detector.detect = lambda feats, scores: {1: True}
+    c.detector.model_sift = lambda *args, **kwargs: {1: True}
     res = c.run_round(0, updates=None, true_malicious={1})
     assert isinstance(res, dict)
 
