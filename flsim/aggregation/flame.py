@@ -201,10 +201,13 @@ class FlameAggregation(AggregationStrategy):
             avg_flat = np.mean(stacked, axis=0)
 
         # 6) 可选加噪
+        noise = 0
         if self.use_noise and self.epsilon > 0.0 and self.delta > 0.0:
-            sigma = (S_t / self.epsilon) * np.sqrt(2.0 * np.log(1.25 / self.delta))
-            if sigma > 0.0:
-                avg_flat = avg_flat + np.random.normal(loc=0.0, scale=float(sigma), size=avg_flat.shape)
+            noise = (S_t / self.epsilon) * np.sqrt(2.0 * np.log(1.25 / self.delta))
+            if noise > 0.0:
+                avg_flat = avg_flat +  np.random.normal(loc=0.0, scale=float(noise), size=avg_flat.shape)
+        # noise = 0.1
+        # avg_flat = avg_flat +  np.random.normal(loc=0.0, scale=float(noise), size=avg_flat.shape)
 
         # 7) 调试信息（与裁剪路径完全一致的参数）
         if self.debug:
@@ -219,7 +222,8 @@ class FlameAggregation(AggregationStrategy):
                 f"clip={'on' if actually_clip else 'off'} (S_eff={S_eff:.6g}) | "
                 f"clipped_ratio={clipped_ratio:.3f} | "
                 f"weighted={'yes' if self.weight_by_samples else 'no'} | "
-                f"use_noise={self.use_noise}"
+                f"use_noise={self.use_noise} | "
+                f"noise={noise}"
             )
 
         # 8) 回填结构并恢复 dtype

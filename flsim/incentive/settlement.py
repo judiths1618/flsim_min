@@ -57,6 +57,7 @@ class SettlementEnginePlans:
             if nid in contributions:
                 plans["note_participation"].add(nid)
             last = float(contributions.get(nid, 0.0))
+            print(f"contributions: {last}")
             plans["append_contrib"][nid] = last
 
             if round_idx < self.p.warmup_rounds:
@@ -64,9 +65,11 @@ class SettlementEnginePlans:
                 plans["credit_rewards"][nid] = r
                 new_rep = reputation_policy.update(node, contribution=max(0.0, last), current_round=round_idx)
                 plans["set_reputations"][nid] = new_rep
+                print(f"reputation: {new_rep}")
                 continue
 
-            if detected.get(nid, False):
+            # if detected.get(nid, False):
+            if detected is None:
                 plans["apply_penalties"][nid] = {
                     "stake_mul": (1.0 - getattr(penalty_policy.p, "stake_penalty_factor", 0.02)),
                     "rep_mul": (1.0 - getattr(penalty_policy.p, "rep_penalty_factor", 0.5)),
@@ -79,4 +82,5 @@ class SettlementEnginePlans:
                 plans["set_reputations"][nid] = new_rep
 
         plans["computed_rewards_next"] = {nid: reward_policy.compute(nodes[nid], nodes) for nid in nodes}
+        print(f"Plans: {plans}")
         return plans

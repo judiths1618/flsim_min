@@ -78,7 +78,8 @@ class ComposedContract:
                     out[k] = v
         self.features[int(node_id)] = out
 
-    def set_contribution(self, node_id: int, score: float):
+    def set_contribution(self, node_id: int, score: float): # quantify the contribution score using eval acc
+        print(f"Node [{node_id}]'s Score: {score}")
         self.contributions[int(node_id)] = float(score)
 
     def credit_reward(self, node_id: int, amount: float):
@@ -135,7 +136,7 @@ class ComposedContract:
             self.features,
             self.rewards,
             # self.detected,
-            # detected_ids,
+            detected_ids,
             self.reward,
             self.penalty,
             self.reputation,
@@ -167,7 +168,7 @@ class ComposedContract:
             self.prev_global = global_params
 
         truth_set: Set[int] = set(map(int, true_malicious or []))
-        # self.metrics.log(round_idx, detected_ids, truth_set)
+        self.metrics.log(round_idx, detected_ids, truth_set)
         print(
             f"[Round {round_idx}] Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}"
         )
@@ -180,7 +181,7 @@ class ComposedContract:
             "reputations": {nid: n.reputation for nid, n in self.nodes.items()},
             "detected": sorted(detected_ids),
             "truth": sorted(truth_set),
-            # "plans": plans,
+            "plans": plans,
             # "metrics": self.metrics.summary()[-1] if self.metrics.summary() else {},
         }
         self.features.clear()

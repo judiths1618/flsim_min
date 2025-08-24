@@ -116,13 +116,13 @@ def train_locally_on_partitions(
         m.setdefault("eval_acc", float(m.get("val_acc", float("nan"))))
         m.setdefault("claimed_acc", float(m.get("acc", float("nan"))))
 
-        print(
-            f"Client {cid} trained: "
-            f"loss={m.get('loss', float('nan')):.4f}, "
-            f"train_acc={m.get('train_acc', float('nan')):.4f}, "
-            f"val_acc={m.get('val_acc', float('nan')):.4f}, "
-            f"n={n:.0f}"
-        )
+        # print(
+        #     f"Client {cid} trained: "
+        #     f"loss={m.get('loss', float('nan')):.4f}, "
+        #     f"train_acc={m.get('train_acc', float('nan')):.4f}, "
+        #     f"val_acc={m.get('val_acc', float('nan')):.4f}, "
+        #     f"n={n:.0f}"
+        # )
 
         # Build absolute-params update
         upd = ModelUpdate(

@@ -12,5 +12,5 @@ class MetricContribution:
         self.p = params or ContributionParams()
 
     def score(self, metrics: dict) -> float:
-        
+        print(f"Metric: {metrics}")
         return float(metrics.get("eval_acc", 0.0))

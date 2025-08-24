@@ -119,7 +119,7 @@ def main():
         print("=== Per-client test acc ===")
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-            # print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
+            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
             eval_accs.append(m["acc"])
             eval_losses.append(m["loss"])
             node_ids.append(u.node_id)
@@ -145,8 +145,6 @@ def main():
             contract.credit_reward(u.node_id, 10.0 * float(m['acc']))
 
 
-        
-
         # Note: Contract will call aggregation which expects absolute params.
         result = contract.run_round(
             r, detected_ids=malicious, updates=updates, true_malicious=true_mal
@@ -167,23 +165,10 @@ def main():
         # print(f"Results: {result}")
         results.append(result)
 
-        # we compute it from the aggregation strategy directly (using the same as in contract).
-        # agg = contract.aggregator  # type: ignore[attr-defined]
-        # if hasattr(agg, "aggregate"):
-        #     global_params = agg.aggregate(updates, prev_global=reference_global)  # type: ignore[arg-type]
-        # else:
-        #     # Fallback: average the weights
-        #     flats = [np.concatenate([v.ravel() for v in u.params.values()]) for u in updates]
-        #     avg = np.mean(np.stack(flats, axis=0), axis=0)
-        #     # Reshape like reference_global
-        #     template = reference_global
-        #     i = 0; shaped = {}
-        #     for k, v in template.items():
-        #         n = v.size; shaped[k] = avg[i:i+n].reshape(v.shape); i += n
-        #     global_params = shaped
+
     summary = contract.metrics.summary()
     # out_obj = {"results": results, "summary": summary, "config": config, "true_malicious": sorted(true_mal),
-    #            "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
+            #    "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
     print(f"Final summary: {summary[-1] if summary else {}}")
     print(f"Round {r} summary:", result.get("metrics", {}))
 
