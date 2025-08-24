@@ -15,6 +15,7 @@ class SettlementEnginePlans:
 
     def run(self, round_idx: int, nodes: Dict[int, NodeState], contributions: Dict[int, float], features: Dict[int, Dict[str, float]],
             pre_rewards: Dict[int, float], detector, reward_policy, penalty_policy, reputation_policy) -> Dict[str, Any]:
+
         """Execute settlement planning with optional detection.
 
         Attempts to use the detector's ``model_sift`` method when available. If the
