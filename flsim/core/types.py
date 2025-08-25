@@ -11,6 +11,7 @@ class NodeState:
     cooldown: float = 0.0
     contrib_history: List[float] = field(default_factory=list)
     participation: int = 0
+    committee_history: List[int] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 @dataclass
