@@ -178,6 +178,7 @@ class ComposedContract:
             self.rewards,
             # self.detected,
             detected_ids,
+            self.committee,
             self.reward,
             self.penalty,
             self.reputation,
