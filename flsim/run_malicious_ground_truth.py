@@ -12,6 +12,7 @@ from flsim.data.flower import load_flower_arrays
 from flsim.aggregation.flame import AggregationStrategy as _Flame  # typing only
 from flsim.attack.malicious import choose_malicious_nodes, apply_malicious_updates
 from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_global_params
+from flsim.incentive.detection.flame import FlameDetector
 
 
 def main():
@@ -114,6 +115,8 @@ def main():
         eval_losses: list[float] = []
         node_ids: list[int] = []
         eval_metrics_map: dict[int, dict[str, float]] = {}
+        features_map: dict[int, dict[str, float]] = {}
+        score_map: dict[int, float] = {}
 
         # 1. Evaluate all clients and store metrics per node
         print("=== Per-client test acc ===")
@@ -124,23 +127,30 @@ def main():
             eval_losses.append(m["loss"])
             node_ids.append(u.node_id)
             eval_metrics_map[u.node_id] = m
-        # print(eval_accs)
+            features_map[u.node_id] = {
+                "flat_update": u.params,
+                "claimed_acc": float(u.metrics.get("acc")),
+                "eval_acc": float(m["acc"]),
+            }
+            score_map[u.node_id] = float(m["acc"])
 
         # 2. Detect malicious clients using a simple accuracy threshold
         threshold = 0.1
         malicious = {nid for nid, acc in zip(node_ids, eval_accs) if acc < threshold}
-
         print(f"Detected malicious clients (Threshold < {threshold}):", malicious)
+
+        # 3. Additional detection via FLAME detector
+        flame_detector = FlameDetector()
+        flame_flags = flame_detector.detect(features_map, score_map)
+        flame_malicious = {nid for nid, flag in flame_flags.items() if flag}
+        if flame_malicious:
+            print("[Flame] Detected malicious clients:", flame_malicious)
+        malicious.update(flame_malicious)
 
         # We pass the updates into the contract per its interface.
         for u in updates:
             m = eval_metrics_map[u.node_id]
-            contract.set_features(
-                u.node_id,
-                flat_update=u.params,
-                claimed_acc=float(u.metrics.get("acc")),
-                eval_acc=float(m['acc']),
-            )
+            contract.set_features(u.node_id, **features_map[u.node_id])
             contract.set_contribution(u.node_id, float(m['acc']))
             contract.credit_reward(u.node_id, 10.0 * float(m['acc']))
 
