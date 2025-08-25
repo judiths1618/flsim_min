@@ -38,7 +38,7 @@ class DefaultReputation:
 
         rep_cap = float(self.p.rep_cap_late if current_round > self.p.rep_cap_round else self.p.rep_cap_early)
         new_rep = float(np.clip(new_rep, 0.0, rep_cap))
-        print(f"node [{node}]'s new rep: {new_rep}")
+        # print(f"node [{node}]'s new rep: {new_rep}")
         return new_rep
 
 

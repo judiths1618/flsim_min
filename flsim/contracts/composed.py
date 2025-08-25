@@ -79,8 +79,8 @@ class ComposedContract:
         self.features[int(node_id)] = out
 
     def set_contribution(self, node_id: int, score: float):  # quantify the contribution score using eval acc
-        print(f"Node [{node_id}]'s Score: {score}")
-        self.contributions[int(node_id)] = float(score)
+        # print(f"Node [{node_id}]'s Score: {score}")
+        self.contributions[int(node_id)] = format(float(10*score), ".4f")
         # print(self.contributions)
 
     def credit_reward(self, node_id: int, amount: float | None = None, *, in_committee: bool = False) -> float:
@@ -91,7 +91,7 @@ class ComposedContract:
         if amount is not None:
             reward_amt = float(amount)
         self.rewards[int(node_id)] = self.rewards.get(int(node_id), 0.0) + float(reward_amt)
-        print(f"node {node_id}'s credit reward amount: {reward_amt}, {node}")
+        # print(f"node {node_id}'s credit reward amount: {reward_amt}, {node}")
         return float(reward_amt)
 
     def update_reputation(self, node_id: int, contribution: float, *, current_round: int) -> float:
@@ -100,7 +100,7 @@ class ComposedContract:
             return 0.0
         new_rep = self.reputation.update(node, contribution=float(contribution), current_round=current_round)
         self.nodes[int(node_id)].reputation = float(new_rep)
-        print(f"{node} update rep: {new_rep}")
+        # print(f"{node} update rep: {new_rep}")
         return float(new_rep)
 
     def apply_penalty(self, node_id: int, *, stake_mul: float | None = None, rep_mul: float | None = None) -> None:
@@ -144,13 +144,13 @@ class ComposedContract:
                     del arr[: len(arr) - 200]
         for nid, d in plans.get("apply_penalties", {}).items():
             if nid in detected_ids:
-                print(nid)
+                # print(nid)
                 self.apply_penalty(nid, stake_mul=d.get("stake_mul"), rep_mul=d.get("rep_mul"))
         for nid, amt in plans.get("credit_rewards", {}).items():
             if nid in self.nodes:
                 node = self.nodes[nid]
                 a = float(amt)
-                node.stake += a
+                # node.stake += a
                 node.balance += a
                 self.balances[nid] = self.balances.get(nid, 0.0) + a
 
@@ -180,7 +180,7 @@ class ComposedContract:
         )
         # executed = self._execute_plans(plans)
         executed = self._execute_plans(plans, detected_ids, round_idx=round_idx)
-        print(f"{executed} \n detected ids: {detected_ids}")
+        # print(f"{executed} \n detected ids: {detected_ids}")
 
         global_params = self.prev_global
 

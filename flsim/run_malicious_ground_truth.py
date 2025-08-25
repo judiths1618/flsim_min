@@ -135,7 +135,7 @@ def main():
             score_map[u.node_id] = float(m["acc"])
 
         # 2. Detect malicious clients using a simple accuracy threshold
-        threshold = 0.1
+        threshold = 0.2
         malicious = {nid for nid, acc in zip(node_ids, eval_accs) if acc < threshold}
         print(f"Detected malicious clients (Threshold < {threshold}):", malicious)
 

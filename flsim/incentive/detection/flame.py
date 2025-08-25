@@ -77,6 +77,12 @@ def _pairwise_euclidean(Xn: np.ndarray) -> np.ndarray:
     D2 = np.maximum(0.0, nrm + nrm.T - 2.0 * G)
     return np.sqrt(D2) + 1e-12
 
+def _pairwise_cosine(Xn: np.ndarray) -> np.ndarray:
+    """Compute pairwise cosine distance matrix for unit-normalized rows."""
+    sim = np.clip(Xn @ Xn.T, -1.0, 1.0)
+    return 1.0 - sim
+
+
 
 @DETECTION.register("flame")
 class FlameDetector:
@@ -243,7 +249,7 @@ class FlameDetector:
         ids, X = _flattened(features)
         if X is None or X.shape[0] < self.min_points:
             keys = set(list(scores.keys()) + list(features.keys()))
-            print(keys)
+            # print(keys)
             return {int(n): (float(scores.get(n, 0.0)) < self.detect_score_thresh) for n in keys}
 
         norms = np.linalg.norm(X, axis=1)
@@ -262,17 +268,16 @@ class FlameDetector:
         Xn = _l2_normalize(X)
 
         labels = None
+        D_cos = _pairwise_cosine(Xn)
         try:
-            
             min_cluster_size = max(self.min_points, int(self.min_cluster_frac * Xn.shape[0]))
-            clusterer = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size, metric='euclidean')
-            labels = clusterer.fit_predict(Xn)
+            clusterer = hdbscan.HDBSCAN(metric="precomputed", min_cluster_size=min_cluster_size)
+            labels = clusterer.fit_predict(D_cos)
         except Exception:
             try:
-                
                 min_samples = max(2, int(self.min_cluster_frac * Xn.shape[0]))
-                clusterer = DBSCAN(eps=self.dbscan_eps, min_samples=min_samples, metric='cosine')
-                labels = clusterer.fit_predict(Xn)
+                clusterer = DBSCAN(eps=self.dbscan_eps, min_samples=min_samples, metric="precomputed")
+                labels = clusterer.fit_predict(D_cos)
             except Exception:
                 labels = None
 

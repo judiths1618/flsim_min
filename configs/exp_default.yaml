@@ -1,6 +1,4 @@
-committee_size: 5
-committee_cooldown: 3
-rep_exponent: 1.0
+
 
 detection:
   name: flame
@@ -8,17 +6,17 @@ detection:
     min_points: 4
     min_cluster_frac: 0.2
     dbscan_eps: 0.3
-    detect_score_thresh: 0.05
+    detect_score_thresh: 0.1
 
 aggregation:
   # name: fedavg
   name: flame_agg
   params:
     percentile: 0.9
-    epsilon: 6
+    epsilon: 1e+6
     delta: 1e-4
     use_clipping: True
-    use_noise: False
+    # use_noise: True
 
 selection:
   name: stratified_softmax
