@@ -228,4 +228,5 @@ class FlameAggregation(AggregationStrategy):
 
         # 8) 回填结构并恢复 dtype
         merged = _shape_like_ordered(prev_global, avg_flat, key_order, base_dtype_map)
+        
         return merged

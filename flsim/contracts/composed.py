@@ -80,7 +80,7 @@ class ComposedContract:
 
     def set_contribution(self, node_id: int, score: float):  # quantify the contribution score using eval acc
         # print(f"Node [{node_id}]'s Score: {score}")
-        self.contributions[int(node_id)] = format(float(10*score), ".4f")
+        self.contributions[int(node_id)] = round(float(10*score), 4)
         # print(self.contributions)
 
     def credit_reward(self, node_id: int, amount: float | None = None, *, in_committee: bool = False) -> float:
@@ -133,27 +133,31 @@ class ComposedContract:
         return sel
 
     def _execute_plans(self, plans: Dict, detected_ids, *, round_idx: int):
+        # record the participation
         for nid in plans.get("note_participation", set()):
             if nid in self.nodes:
                 self.nodes[nid].participation += 1
+        # append the contributions
         for nid, c in plans.get("append_contrib", {}).items():
             if nid in self.nodes:
                 arr = self.nodes[nid].contrib_history
                 arr.append(float(c))
                 if len(arr) > 200:
                     del arr[: len(arr) - 200]
+        # apply penalties according to the detection
         for nid, d in plans.get("apply_penalties", {}).items():
             if nid in detected_ids:
                 # print(nid)
                 self.apply_penalty(nid, stake_mul=d.get("stake_mul"), rep_mul=d.get("rep_mul"))
+        # compute rewards
         for nid, amt in plans.get("credit_rewards", {}).items():
             if nid in self.nodes:
                 node = self.nodes[nid]
                 a = float(amt)
                 # node.stake += a
-                node.balance += a
+                node.balance += a   # add reward to balance
                 self.balances[nid] = self.balances.get(nid, 0.0) + a
-
+        # update the reputation
         for nid in plans.get("set_reputations", {}).keys():
             self.update_reputation(nid, contribution=self.contributions.get(nid, 0.0), current_round=round_idx)
 
@@ -189,11 +193,11 @@ class ComposedContract:
             admitted_ids = [u.node_id for u in filtered_updates]
             print(f"Admitted client ids: {admitted_ids}")
             try:
+                # only aggregate the model updates fron filtered ones
                 global_params = self.aggregator.aggregate(
                     filtered_updates,
                     prev_global=self.prev_global,
                     admitted_ids=admitted_ids,
-
                 )
 
             except TypeError:
