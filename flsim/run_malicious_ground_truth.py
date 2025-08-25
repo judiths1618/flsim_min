@@ -45,7 +45,7 @@ def main():
     nodes=args.clients
 
     # ---------- Register nodes with initial stake and reputation ----------
-    for nid in range(1, nodes+1):
+    for nid in range(0, nodes):
         contract.register_node(nid, stake=100.0, reputation=50.0)
     
 

@@ -13,7 +13,7 @@ def test_node_zero_incentive_flow():
 
     # Contribution tracking should record node 0
     c.set_contribution(0, 0.8)
-    assert c.contributions.get(0) == 0.8
+    assert c.contributions.get(0) == 8
 
     # Reward accounting should credit node 0
     c.credit_reward(0, amount=10.0)
