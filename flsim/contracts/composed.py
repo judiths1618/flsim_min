@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from typing import Any, Dict, List, Optional, Sequence, Set
 import numpy as np
@@ -116,14 +116,20 @@ class ComposedContract:
         node.stake = max(0.0, node.stake * stake_mul)
         node.reputation = max(0.0, node.reputation * rep_mul)
 
-    def select_committee(self):
+    def select_committee(self, round_idx: int | None = None):
         sel = self.selector.select(self.nodes, self.cooldowns)
         self.committee = sel
         self.committee_history.append(sel)
         for nid in list(self.cooldowns.keys()):
             self.cooldowns[nid] = max(0.0, self.cooldowns[nid] - 1.0)
+            if nid in self.nodes:
+                self.nodes[nid].cooldown = self.cooldowns[nid]
         for nid in sel:
             self.cooldowns[nid] = float(self.cfg.committee_cooldown)
+            if nid in self.nodes:
+                self.nodes[nid].cooldown = self.cooldowns[nid]
+                if round_idx is not None:
+                    self.nodes[nid].committee_history.append(round_idx)
         return sel
 
     def _execute_plans(self, plans: Dict, detected_ids, *, round_idx: int):
@@ -159,7 +165,7 @@ class ComposedContract:
     def run_round(self, round_idx: int, detected_ids, updates: Optional[List[ModelUpdate]] = None,
                   true_malicious: Optional[Sequence[int]] = None):
 
-        print(f"Selected committee: {self.select_committee()} for round {round_idx}")
+        print(f"Selected committee: {self.select_committee(round_idx)} for round {round_idx}")
         plans = self.settlement.run(
             round_idx,
             self.nodes,
@@ -214,6 +220,7 @@ class ComposedContract:
             "detected": sorted(detected_ids),
             "truth": sorted(truth_set),
             "plans": plans,
+            "node_states": {nid: asdict(n) for nid, n in self.nodes.items()},
             # "metrics": self.metrics.summary()[-1] if self.metrics.summary() else {},
         }
         self.features.clear()

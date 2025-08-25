@@ -55,3 +55,20 @@ def test_run_round_no_updates_returns_prev_global():
     first = c.run_round(0, detected_ids=set(), updates=updates)
     second = c.run_round(1, detected_ids=set(), updates=None)
     assert np.array_equal(second["global_params"], first["global_params"])
+
+
+def test_nodestate_updates():
+    c = ComposedContract(ContractConfig(committee_size=2, settlement="plans_engine"))
+    for nid in range(1, 4):
+        c.register_node(nid, stake=100.0, reputation=50.0)
+        c.set_contribution(nid, 0.5)
+    updates = [ModelUpdate(node_id=i, params=np.ones(3), weight=1.0) for i in range(1, 4)]
+    out = c.run_round(0, detected_ids=set(), updates=updates)
+    # participation and contribution history recorded
+    for nid in range(1, 4):
+        assert c.nodes[nid].participation == 1
+        assert len(c.nodes[nid].contrib_history) == 1
+        assert c.nodes[nid].cooldown == c.cooldowns[nid]
+    # committee history for selected nodes
+    for nid in out["committee"]:
+        assert 0 in c.nodes[nid].committee_history
