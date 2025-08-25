@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, Sequence
 from ..core.types import NodeState
 from ..core.registry import SETTLEMENT
 
@@ -13,8 +13,19 @@ class SettlementEnginePlans:
     def __init__(self, params: SettlementParams | None = None, **kwargs) -> None:
         self.p = params or SettlementParams(**kwargs) if kwargs else (params or SettlementParams())
 
-    def run(self, round_idx: int, nodes: Dict[int, NodeState], contributions: Dict[int, float], features: Dict[int, Dict[str, float]],
-            pre_rewards: Dict[int, float], detected, reward_policy, penalty_policy, reputation_policy) -> Dict[str, Any]:
+    def run(
+        self,
+        round_idx: int,
+        nodes: Dict[int, NodeState],
+        contributions: Dict[int, float],
+        features: Dict[int, Dict[str, float]],
+        pre_rewards: Dict[int, float],
+        detected,
+        committee: Sequence[int],
+        reward_policy,
+        penalty_policy,
+        reputation_policy,
+    ) -> Dict[str, Any]:
 
         """Execute settlement planning with optional detection.
 
@@ -82,6 +93,10 @@ class SettlementEnginePlans:
                 new_rep = reputation_policy.update(node, contribution=max(0.0, last), current_round=round_idx)
                 plans["set_reputations"][nid] = new_rep
 
-        plans["computed_rewards_next"] = {nid: reward_policy.compute(nodes[nid], nodes) for nid in nodes}
+        committee_set = set(map(int, committee))
+        plans["computed_rewards_next"] = {
+            nid: reward_policy.compute(nodes[nid], nodes, in_committee=(nid in committee_set))
+            for nid in nodes
+        }
         # print(f"Plans: {plans}")
         return plans

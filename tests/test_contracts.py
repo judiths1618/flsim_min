@@ -72,3 +72,27 @@ def test_nodestate_updates():
     # committee history for selected nodes
     for nid in out["committee"]:
         assert 0 in c.nodes[nid].committee_history
+
+
+def test_committee_bonus_applied_in_settlement():
+    c = ComposedContract(ContractConfig(committee_size=1, settlement="plans_engine"))
+    for nid in (1, 2):
+        c.register_node(nid, stake=100.0, reputation=50.0)
+        c.nodes[nid].contrib_history.append(1.0)
+    committee = [1]
+    c.committee = committee
+    plans = c.settlement.run(
+        0,
+        c.nodes,
+        {},
+        {},
+        {},
+        set(),
+        committee,
+        c.reward,
+        c.penalty,
+        c.reputation,
+    )
+    r1 = plans["computed_rewards_next"][1]
+    r2 = plans["computed_rewards_next"][2]
+    assert r1 > r2
