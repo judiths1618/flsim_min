@@ -78,9 +78,9 @@ class ComposedContract:
                     out[k] = v
         self.features[int(node_id)] = out
 
-    def set_contribution(self, node_id: int, score: float): # quantify the contribution score using eval acc
+    def set_contribution(self, node_id: int, score: float):  # quantify the contribution score using eval acc
         print(f"Node [{node_id}]'s Score: {score}")
-        self.contributions[int(node_id)] = float(10 * score)
+        self.contributions[int(node_id)] = float(score)
         # print(self.contributions)
 
     def credit_reward(self, node_id: int, amount: float | None = None, *, in_committee: bool = False) -> float:
@@ -127,9 +127,9 @@ class ComposedContract:
         return sel
 
     def _execute_plans(self, plans: Dict, detected_ids, *, round_idx: int):
-        for nid in plans.get("note_participation", set()):  
+        for nid in plans.get("note_participation", set()):
             if nid in self.nodes:
-                self.nodes[nid].participation += 1  
+                self.nodes[nid].participation += 1
         for nid, c in plans.get("append_contrib", {}).items():
             if nid in self.nodes:
                 arr = self.nodes[nid].contrib_history
@@ -142,11 +142,11 @@ class ComposedContract:
                 self.apply_penalty(nid, stake_mul=d.get("stake_mul"), rep_mul=d.get("rep_mul"))
         for nid, amt in plans.get("credit_rewards", {}).items():
             if nid in self.nodes:
-                # node = self.nodes[nid]
+                node = self.nodes[nid]
                 a = float(amt)
-                # node.stake += a
-                # self.balances[nid] = self.balances.get(nid, 0.0) + a
-                self.nodes[nid].balance += a
+                node.stake += a
+                node.balance += a
+                self.balances[nid] = self.balances.get(nid, 0.0) + a
 
         for nid in plans.get("set_reputations", {}).keys():
             self.update_reputation(nid, contribution=self.contributions.get(nid, 0.0), current_round=round_idx)
@@ -173,7 +173,7 @@ class ComposedContract:
             self.reputation,
         )
         # executed = self._execute_plans(plans)
-        executed = self._execute_plans(plans, round_idx=round_idx)
+        executed = self._execute_plans(plans, detected_ids, round_idx=round_idx)
         print(f"{executed} \n detected ids: {detected_ids}")
 
         global_params = self.prev_global
