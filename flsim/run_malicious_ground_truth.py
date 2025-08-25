@@ -159,7 +159,6 @@ def main():
         result = contract.run_round(
             r, detected_ids=malicious, updates=updates, true_malicious=true_mal
         )  # malicious ground-truth here
-        print(f"res: {result}")
 
         # ---------------- evaluate global model -----------------
         # mG = evaluate_global_params(args.model, result["global_params"], X_eval, y_eval)

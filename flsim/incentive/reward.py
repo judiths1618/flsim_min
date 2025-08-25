@@ -67,6 +67,7 @@ class DefaultReward:
         beta = 1.0 - alpha
 
         committee_bonus = self.p.committee_bonus_para * diversity_bonus if in_committee else 0.0
+        # print(committee_bonus)
 
         total_stake = sum(n.stake for n in nodes.values()) + 1e-8
         total_contrib = (
