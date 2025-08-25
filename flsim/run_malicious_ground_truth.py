@@ -159,8 +159,7 @@ def main():
         result = contract.run_round(
             r, detected_ids=malicious, updates=updates, true_malicious=true_mal
         )  # malicious ground-truth here
-        # print(f"res: {result}")
-        
+
         # ---------------- evaluate global model -----------------
         # mG = evaluate_global_params(args.model, result["global_params"], X_eval, y_eval)
         # print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
@@ -168,11 +167,9 @@ def main():
         eval_metrics2 = evaluate_global_params(args.model, global_params2,
                                          X_eval, y_eval)
         print(f"[Eval] Global after round {r}: acc={eval_metrics2['acc']:.4f}, loss={eval_metrics2['loss']:.4f}")
-        
-        # exit()
-        # The contract stores the new global in result["metrics"] if configured; otherwise,
-        # res = c.run_round(r, updates=updates, true_malicious=true_mal)
-        # print(f"Results: {result}")
+
+        # Include evaluation metrics in the round results for downstream analysis
+        result["metrics"] = eval_metrics2
         results.append(result)
 
 
