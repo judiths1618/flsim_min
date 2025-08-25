@@ -13,4 +13,4 @@ class MetricContribution:
 
     def score(self, metrics: dict) -> float:
         # print(f"Metric: {metrics}")
-        return float(metrics.get("eval_acc", 0.0))
+        return float(10 * metrics.get("eval_acc", 0.0))

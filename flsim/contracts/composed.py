@@ -80,8 +80,8 @@ class ComposedContract:
 
     def set_contribution(self, node_id: int, score: float): # quantify the contribution score using eval acc
         print(f"Node [{node_id}]'s Score: {score}")
-        self.contributions[int(node_id)] = float(score)
-        print(self.contributions)
+        self.contributions[int(node_id)] = float(10 * score)
+        # print(self.contributions)
 
     def credit_reward(self, node_id: int, amount: float | None = None, *, in_committee: bool = False) -> float:
         node = self.nodes.get(int(node_id))
@@ -126,7 +126,7 @@ class ComposedContract:
             self.cooldowns[nid] = float(self.cfg.committee_cooldown)
         return sel
 
-    def _execute_plans(self, plans: Dict, *, round_idx: int):
+    def _execute_plans(self, plans: Dict, detected_ids, *, round_idx: int):
         for nid in plans.get("note_participation", set()):  
             if nid in self.nodes:
                 self.nodes[nid].participation += 1  
@@ -137,13 +137,17 @@ class ComposedContract:
                 if len(arr) > 200:
                     del arr[: len(arr) - 200]
         for nid, d in plans.get("apply_penalties", {}).items():
-            self.apply_penalty(nid, stake_mul=d.get("stake_mul"), rep_mul=d.get("rep_mul"))
+            if nid in detected_ids:
+                print(nid)
+                self.apply_penalty(nid, stake_mul=d.get("stake_mul"), rep_mul=d.get("rep_mul"))
         for nid, amt in plans.get("credit_rewards", {}).items():
             if nid in self.nodes:
-                node = self.nodes[nid]
+                # node = self.nodes[nid]
                 a = float(amt)
-                node.stake += a
-                self.balances[nid] = self.balances.get(nid, 0.0) + a
+                # node.stake += a
+                # self.balances[nid] = self.balances.get(nid, 0.0) + a
+                self.nodes[nid].balance += a
+
         for nid in plans.get("set_reputations", {}).keys():
             self.update_reputation(nid, contribution=self.contributions.get(nid, 0.0), current_round=round_idx)
 

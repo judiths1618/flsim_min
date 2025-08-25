@@ -29,6 +29,7 @@ class RewardParams:
     base_reward: float = 100.0
     hist_decay: float = 0.9
     stake_weight: float = 0.4
+    committee_bonus_para: float = 20.0
 
 
 @REWARD.register("default")
@@ -65,7 +66,7 @@ class DefaultReward:
         alpha = sigmoid((avg_rep - node_rep) / 50.0) * self.p.stake_weight
         beta = 1.0 - alpha
 
-        committee_bonus = 20.0 * diversity_bonus if in_committee else 0.0
+        committee_bonus = self.p.committee_bonus_para * diversity_bonus if in_committee else 0.0
 
         total_stake = sum(n.stake for n in nodes.values()) + 1e-8
         total_contrib = (
@@ -81,6 +82,6 @@ class DefaultReward:
             * diversity_bonus
             + committee_bonus
         )
-        print(f"reward: {reward}\n")
+        print(f"reward[{node}]: {reward}\n")
         return float(max(reward, 0.0))
 
