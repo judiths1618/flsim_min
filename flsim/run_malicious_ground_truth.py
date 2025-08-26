@@ -81,6 +81,7 @@ def main():
         updates, reference_global = train_locally_on_partitions(
             model_name=args.model,
             partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
+            # partitions={cid: (Xp[cid], yp[cid]) for cid in Xp},
             global_params=global_params,
             epochs=args.epochs,
             batch_size=args.batch,
@@ -122,7 +123,7 @@ def main():
         print("=== Per-client test acc ===")
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}")
+            print(float(u.metrics.get("acc")))
             eval_accs.append(m["acc"])
             eval_losses.append(m["loss"])
             node_ids.append(u.node_id)
@@ -133,11 +134,12 @@ def main():
                 "eval_acc": float(m["acc"]),
             }
             score_map[u.node_id] = float(m["acc"])
-
+            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"))
         # 2. Detect malicious clients using a simple accuracy threshold
-        threshold = 0.2
-        malicious = {nid for nid, acc in zip(node_ids, eval_accs) if acc < threshold}
-        print(f"Detected malicious clients (Threshold < {threshold}):", malicious)
+        acc_threshold = 0.2
+        loss_threshold = 3
+        malicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if (acc < acc_threshold or loss > loss_threshold)}
+        print(f"Detected malicious clients (acc_Threshold < {acc_threshold} or loss_threshold > {loss_threshold}):", malicious)
 
         # 3. Additional detection via FLAME detector
         flame_detector = FlameDetector()
@@ -166,8 +168,9 @@ def main():
         global_params2 = result["global_params"]
         eval_metrics2 = evaluate_global_params(args.model, global_params2,
                                          X_eval, y_eval)
-        print(f"[Eval] Global after round {r}: acc={eval_metrics2['acc']:.4f}, loss={eval_metrics2['loss']:.4f}")
+        print(f"[Eval] Global after round {r}: acc={eval_metrics2['acc']:.4f}, loss={eval_metrics2['loss']:.4f}\n")
 
+        print(result["node_states"])
         # Include evaluation metrics in the round results for downstream analysis
         result["metrics"] = eval_metrics2
         results.append(result)

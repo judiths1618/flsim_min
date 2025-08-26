@@ -47,6 +47,7 @@ def train_locally_on_partitions(
 
     updates: list[ModelUpdate] = []
     for cid, (X, y, X_val, y_val) in partitions.items():
+    
         # Fresh local model from the current global
         local = ModelCls(D, K)
         local.set_parameters(global_params)
@@ -99,15 +100,15 @@ def train_locally_on_partitions(
             m["train_acc"] = tr
 
         # Val acc (compute if missing and val provided)
-        if "val_acc" not in m:
-            if X_val is not None and y_val is not None and X_val.size > 0 and y_val.size > 0:
-                try:
-                    val_preds = local.predict(X_val)
-                    m["val_acc"] = float(np.mean(val_preds == y_val))
-                except Exception:
-                    m["val_acc"] = float("nan")
-            else:
-                m["val_acc"] = float("nan")
+        # if "val_acc" not in m:
+        #     if X_val is not None and y_val is not None and X_val.size > 0 and y_val.size > 0:
+        #         try:
+        #             val_preds = local.predict(X_val)
+        #             m["val_acc"] = float(np.mean(val_preds == y_val))
+        #         except Exception:
+        #             m["val_acc"] = float("nan")
+        #     else:
+        #         m["val_acc"] = float("nan")
 
         # Standard fields
         m.setdefault("n", n)

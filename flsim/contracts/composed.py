@@ -154,6 +154,7 @@ class ComposedContract:
             if nid in self.nodes:
                 node = self.nodes[nid]
                 a = float(amt)
+                print(f"\n reward ammount: {a}\n")
                 # node.stake += a
                 node.balance += a   # add reward to balance
                 self.balances[nid] = self.balances.get(nid, 0.0) + a
