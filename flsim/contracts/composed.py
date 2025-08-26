@@ -91,7 +91,7 @@ class ComposedContract:
         if amount is not None:
             reward_amt = float(amount)
         self.rewards[int(node_id)] = self.rewards.get(int(node_id), 0.0) + float(reward_amt)
-        # print(f"node {node_id}'s credit reward amount: {reward_amt}, {node}")
+        print(f"node {node_id}'s credit reward amount: {reward_amt}")
         return float(reward_amt)
 
     def update_reputation(self, node_id: int, contribution: float, *, current_round: int) -> float:
@@ -186,7 +186,14 @@ class ComposedContract:
         )
         # executed = self._execute_plans(plans)
         executed = self._execute_plans(plans, detected_ids, round_idx=round_idx)
-        # print(f"{executed} \n detected ids: {detected_ids}")
+        print(f"{executed} \n detected ids: {detected_ids}")
+
+        # credit newly computed rewards immediately
+        for nid, r in plans.get("computed_rewards_next", {}).items():
+            r = float(r)
+            self.balances[nid] = self.balances.get(nid, 0.0) + r
+            if nid in self.nodes:
+                self.nodes[nid].balance += r
 
         global_params = self.prev_global
 
@@ -231,11 +238,7 @@ class ComposedContract:
         }
         self.features.clear()
         self.contributions.clear()
-        # self.rewards.clear()
-        self.rewards = {
-            int(nid): float(r)
-            for nid, r in plans.get("computed_rewards_next", {}).items()
-        }
+        self.rewards.clear()
 
         return out
 

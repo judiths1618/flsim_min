@@ -88,8 +88,8 @@ class SettlementEnginePlans:
                 }
                 plans["credit_rewards"][nid] = 0.0
             else:
-                # r = float(pre_rewards.get(nid, 0.0))
-                r = reward_policy.compute(node, nodes, committee)
+                r = float(pre_rewards.get(nid, 0.0))
+                # r = reward_policy.compute(node, nodes, committee)
                 print(f"r: {r}")
                 plans["credit_rewards"][nid] = r
                 new_rep = reputation_policy.update(node, contribution=max(0.0, last), current_round=round_idx)
