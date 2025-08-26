@@ -90,7 +90,7 @@ class ComposedContract:
         reward_amt = self.reward.compute(node, self.nodes, in_committee=in_committee)
         if amount is not None:
             reward_amt = float(amount)
-        self.rewards[int(node_id)] = self.rewards.get(int(node_id), 0.0) + float(reward_amt)
+        self.rewards[int(node_id)] = float(reward_amt)
         # print(f"node {node_id}'s credit reward amount: {reward_amt}, {node}")
         return float(reward_amt)
 
