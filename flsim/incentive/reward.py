@@ -32,7 +32,7 @@ class RewardParams:
     committee_bonus_para: float = 20.0
 
 
-@REWARD.register("default")
+@REWARD.register("ours")
 class DefaultReward:
     def __init__(self, params: RewardParams | None = None, **kwargs) -> None:
         self.p = params or RewardParams(**kwargs) if kwargs else (params or RewardParams())

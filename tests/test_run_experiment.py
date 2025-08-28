@@ -2,7 +2,7 @@ import numpy as np
 from unittest.mock import patch
 
 from flsim.core.types import ModelUpdate
-from flsim import run_experiment
+from flsim import run_experiment_ours
 
 
 def test_run_experiment_smoke(tmp_path):
@@ -47,7 +47,7 @@ def test_run_experiment_smoke(tmp_path):
     with patch("flsim.run_experiment.load_flower_arrays", return_value=(Xp, yp, D, K, X_eval, y_eval)), \
          patch("flsim.run_experiment.train_locally_on_partitions", side_effect=fake_train_locally_on_partitions), \
          patch("flsim.run_experiment.build_contract_from_yaml", return_value=DummyContract()):
-        run_experiment.run(
+        run_experiment_ours.run(
             "configs/exp_default.yaml",
             rounds=1,
             nodes=nodes,

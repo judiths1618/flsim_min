@@ -78,6 +78,7 @@ def compute_round_statistics(results: List[Dict[str, Any]], detection_summary: L
 
         bal = {int(k): float(v) for k, v in (res.get("balances") or {}).items()}
         balances_over_time.append((r, bal))
+        
 
     return {
         "accuracy_per_round": acc_curve,

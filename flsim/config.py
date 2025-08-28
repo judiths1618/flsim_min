@@ -31,11 +31,20 @@ def build_contract_from_dict(cfg: Dict[str, Any]) -> ComposedContract:
     names = {}
     params = {}
     for section, default_name in [
+        # ("detection", "flame"),
+        # ("contribution", "metric"),
+        # ("reward", "default"),
+        # ("penalty", "default"),
+        # ("reputation", "default"),
+        # ("selection", "stratified_softmax"),
+        # ("settlement", "plans_engine"),
+        # ("aggregation", "flame_agg"),
+
         ("detection", "flame"),
         ("contribution", "metric"),
-        ("reward", "default"),
-        ("penalty", "default"),
-        ("reputation", "default"),
+        ("reward", "ours"),
+        ("penalty", "ours"),
+        ("reputation", "ours"),
         ("selection", "stratified_softmax"),
         ("settlement", "plans_engine"),
         ("aggregation", "flame_agg"),

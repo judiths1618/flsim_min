@@ -32,20 +32,20 @@ settlement:
     warmup_rounds: 1
 
 reward:
-  name: default
+  name: ours
   params:
     base_reward: 100.0
     hist_decay: 0.9
     stake_weight: 0.4
 
 penalty:
-  name: default
+  name: ours
   params:
     stake_penalty_factor: 0.2
     rep_penalty_factor: 0.5
 
 reputation:
-  name: default
+  name: ours
   params:
     X_c: 10.0
     X_s: 5.0
