@@ -5,8 +5,23 @@ import argparse
 import numpy as np
 import random
 import csv
+import os
+import sys
 
-from . import run_experiment
+# When executed as a script (``python flsim/run_experiment_ours.py``) the
+# package-relative imports fail because ``__package__`` is empty. Adjust the
+# path in that case so the module can still resolve ``flsim.run_experiment``.
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+    from flsim import run_experiment  # type: ignore
+else:  # pragma: no cover - exercised only when run as module
+    from . import run_experiment
+
+# Expose helper functions for convenience in ``main``
+build_contract_from_yaml = run_experiment.build_contract_from_yaml
+train_locally_on_partitions = run_experiment.train_locally_on_partitions
+load_flower_arrays = run_experiment.load_flower_arrays
+
 # from flsim.aggregation.base import _zeros_like
 from flsim.aggregation.flame import AggregationStrategy as _Flame  # typing only
 from flsim.attack.malicious import choose_malicious_nodes, apply_malicious_updates
