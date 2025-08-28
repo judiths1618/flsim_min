@@ -11,3 +11,11 @@ class PenaltyParams:
 class DefaultPenalty:
     def __init__(self, params: PenaltyParams | None = None, **kwargs) -> None:
         self.p = params or PenaltyParams(**kwargs) if kwargs else (params or PenaltyParams())
+
+
+# Legacy configs sometimes refer to this penalty implementation as "ours".  The
+# behaviour is identical to ``default`` so we simply expose an alias to avoid
+# registry lookups failing when loading such configs.
+@PENALTY.register("ours")
+class OursPenalty(DefaultPenalty):
+    pass

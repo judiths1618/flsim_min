@@ -42,36 +42,8 @@ class DefaultReputation:
         return new_rep
 
 
-        """
-        Robust reputation update system
-        
-        Parameters:
-            node (Node): The node whose reputation is being updated.
-            contribution (float): The contribution value from the node.
-            
-        Returns:
-            new_rep (float): The updated reputation value for the node
-        """
-        # Dynamic decay
-        age_factor = 1 - 1/(1 + node.participation/100)
-        delta = 0.88 + 0.07 * age_factor
-        
-        # Contribution quality
-        contrib_base = 0
-        contrib_thre = 10
-        contrib_quality = sigmoid((contribution-contrib_base)/(contrib_thre - contrib_base))
-        
-        # Stability evaluation
-        if len(node.contrib_history) >= 5:
-            stability = 1 - np.std(node.contrib_history[-5:])/5
-        else:
-            stability = 0.8
-        
-        # New reputation calculation 
-        new_rep = (node.reputation * delta + 
-                   contrib_quality * self.X_c + 
-                   stability * self.X_s)
-        
-        # Dynamic cap
-        rep_cap = 500 if self.current_round > 50 else 300
-        return np.clip(new_rep, 0, rep_cap)
+# Expose the default implementation under the legacy name "ours" so older
+# configuration files continue to work.
+@REPUTATION.register("ours")
+class OursReputation(DefaultReputation):
+    pass

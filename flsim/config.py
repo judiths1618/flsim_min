@@ -7,10 +7,10 @@ try:
 except Exception:
     yaml = None
 
-from .contracts.composed_ours import ContractConfig, ComposedContract
-from .contracts.composed_ours_zero import ContractConfig, ComposedContract
-from .contracts.composed_flame import ContractConfig, ComposedContract
-from .contracts.composed_fedavg import ContractConfig, ComposedContract
+# Re-exported composed contract that defaults to the strategies used in our
+# experiments. Importing through this thin wrapper avoids accidentally
+# overriding the intended contract implementation with other variants.
+from .contracts.composed import ContractConfig, ComposedContract
 
 
 def _load_yaml(path: str) -> Dict[str, Any]:
@@ -31,15 +31,6 @@ def build_contract_from_dict(cfg: Dict[str, Any]) -> ComposedContract:
     names = {}
     params = {}
     for section, default_name in [
-        # ("detection", "flame"),
-        # ("contribution", "metric"),
-        # ("reward", "default"),
-        # ("penalty", "default"),
-        # ("reputation", "default"),
-        # ("selection", "stratified_softmax"),
-        # ("settlement", "plans_engine"),
-        # ("aggregation", "flame_agg"),
-
         ("detection", "flame"),
         ("contribution", "metric"),
         ("reward", "ours"),
