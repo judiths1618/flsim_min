@@ -1,0 +1,8 @@
+# configs/exp_fedavg.yaml
+aggregation:
+  name: fedavg         # FedAvg implementation
+selection: null         # include every client, no committee
+reward: null            # disable reward/penalty/reputation modules
+penalty: null
+reputation: null
+settlement: null

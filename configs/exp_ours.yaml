@@ -9,14 +9,14 @@ detection:
     detect_score_thresh: 0.1
 
 aggregation:
-  name: fedavg
-  # name: flame_agg
-  # params:
-  #   percentile: 0.9
-  #   epsilon: 1e+6
-  #   delta: 1e-4
-  #   use_clipping: False
-  #   use_noise: False
+  # name: fedavg
+  name: flame_agg
+  params:
+    percentile: 0.9
+    epsilon: 1e+6
+    delta: 1e-4
+    use_clipping: True
+    use_noise: False
 
 selection:
   name: stratified_softmax
@@ -41,7 +41,7 @@ reward:
 penalty:
   name: default
   params:
-    stake_penalty_factor: 0.02
+    stake_penalty_factor: 0.2
     rep_penalty_factor: 0.5
 
 reputation:
@@ -53,4 +53,4 @@ reputation:
     rep_cap_late: 500.0
     rep_cap_round: 50
     contrib_base: 0.0
-    contrib_thre: 1.0
+    contrib_thre: 10.0

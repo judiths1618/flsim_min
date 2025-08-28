@@ -83,6 +83,6 @@ class DefaultReward:
             * diversity_bonus
             + committee_bonus
         )
-        print(f"reward[{node}]: {reward}, {committee_bonus} \n")
+        print(f"reward computed: {reward}, committee bonus: {committee_bonus}, total contribution: {node.contrib_history} \n")
         return float(max(reward, 0.0))
 

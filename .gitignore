@@ -14,6 +14,7 @@ build/
 
 # Ignore OS files
 .DS_Store
+.vscode
 Thumbs.db
 
 # Ignore the datset files

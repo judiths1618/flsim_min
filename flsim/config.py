@@ -10,6 +10,7 @@ except Exception:
 from .contracts.composed import ContractConfig, ComposedContract
 
 def _load_yaml(path: str) -> Dict[str, Any]:
+    print(f"load yaml path: {path}")
     with open(path, "r", encoding="utf-8") as f:
         txt = f.read()
     if yaml is not None:
@@ -26,7 +27,7 @@ def build_contract_from_dict(cfg: Dict[str, Any]) -> ComposedContract:
     names = {}
     params = {}
     for section, default_name in [
-        # ("detection", "flame"),
+        ("detection", "flame"),
         ("contribution", "metric"),
         ("reward", "default"),
         ("penalty", "default"),

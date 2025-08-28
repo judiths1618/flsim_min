@@ -12,7 +12,7 @@ class ReputationParams:
     rep_cap_late: float = 500.0
     rep_cap_round: int = 50
     contrib_base: float = 0.0
-    contrib_thre: float = 1.0
+    contrib_thre: float = 10.0
 
 @REPUTATION.register("default")
 class DefaultReputation:

@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import numpy as np
 import random
+import csv
 
 from flsim.config import build_contract_from_yaml
 from flsim.train.local import train_locally_on_partitions
@@ -42,7 +43,27 @@ def main():
 
     # --------- Build composed contract from YAML --------
     contract = build_contract_from_yaml(args.config)
-    nodes=args.clients
+    nodes = args.clients
+
+    log_fields = [
+        "round",
+        "node_id",
+        "stake",
+        "reputation",
+        "train_acc",
+        "train_loss",
+        "val_acc",
+        "val_loss",
+        "reward",
+        "stake_penalty",
+        "rep_penalty",
+        "is_committee",
+        "is_malicious",
+        "detected",
+    ]
+    log_file = open("fl_log.csv", "w", newline="")
+    writer = csv.DictWriter(log_file, fieldnames=log_fields)
+    writer.writeheader()
 
     # ---------- Register nodes with initial stake and reputation ----------
     for nid in range(0, nodes):
@@ -88,6 +109,7 @@ def main():
             lr=args.lr,
             seed=42 + r,
         )
+        train_metrics_map = {u.node_id: u.metrics for u in updates}
 
         if r == 1 and getattr(contract, "prev_global", None) is None:
             contract.prev_global = {k: v.copy() for k, v in reference_global.items()}
@@ -135,11 +157,12 @@ def main():
             }
             score_map[u.node_id] = float(m["acc"])
             print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"))
-        # 2. Detect malicious clients using a simple accuracy threshold
-        acc_threshold = 0.2
-        loss_threshold = 3
-        malicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if (acc < acc_threshold or loss > loss_threshold)}
-        print(f"Detected malicious clients (acc_Threshold < {acc_threshold} or loss_threshold > {loss_threshold}):", malicious)
+        # 2. Detect suspicious clients using a simple accuracy threshold
+        # suspicious={}
+        acc_threshold = 0.0
+        loss_threshold = 100
+        suspicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if (acc < acc_threshold and loss > loss_threshold)}
+        print(f"Detected suspicious clients (acc_Threshold < {acc_threshold} and loss_threshold > {loss_threshold}):", suspicious)
 
         # 3. Additional detection via FLAME detector
         flame_detector = FlameDetector()
@@ -147,19 +170,19 @@ def main():
         flame_malicious = {nid for nid, flag in flame_flags.items() if flag}
         if flame_malicious:
             print("[Flame] Detected malicious clients:", flame_malicious)
-        malicious.update(flame_malicious)
+        suspicious.update(flame_malicious)
 
         # We pass the updates into the contract per its interface.
         for u in updates:
             m = eval_metrics_map[u.node_id]
             contract.set_features(u.node_id, **features_map[u.node_id])
             contract.set_contribution(u.node_id, float(m['acc']))
-            contract.credit_reward(u.node_id, 10.0 * float(m['acc']))
+            # contract.credit_reward(u.node_id, 10.0 * float(m['acc']))
 
 
         # Note: Contract will call aggregation which expects absolute params.
         result = contract.run_round(
-            r, detected_ids=malicious, updates=updates, true_malicious=true_mal
+            r, detected_ids=suspicious, updates=updates, true_malicious=true_mal
         )  # malicious ground-truth here
 
         # ---------------- evaluate global model -----------------
@@ -170,17 +193,53 @@ def main():
                                          X_eval, y_eval)
         print(f"[Eval] Global after round {r}: acc={eval_metrics2['acc']:.4f}, loss={eval_metrics2['loss']:.4f}\n")
 
-        print(result["node_states"])
+        # print(result["node_states"])
         # Include evaluation metrics in the round results for downstream analysis
         result["metrics"] = eval_metrics2
         results.append(result)
+        # print(f"Round {r} result:", result)
+
+        plans = result.get("plans", {})
+        rewards_map = plans.get("credit_rewards", {})
+        penalties_map = plans.get("apply_penalties", {})
+        committee_set = set(result.get("committee", []))
+        detected_set = set(result.get("detected", []))
+        truth_set = set(result.get("truth", []))
+
+        for nid, state in result["node_states"].items():
+            train_m = train_metrics_map.get(nid, {})
+            eval_m = eval_metrics_map.get(nid, {})
+            pen = penalties_map.get(nid, {})
+            writer.writerow(
+                {
+                    "round": r,
+                    "node_id": nid,
+                    "stake": state["stake"],
+                    "reputation": state["reputation"],
+                    "train_acc": train_m.get("acc", float("nan")),
+                    "train_loss": train_m.get("loss", float("nan")),
+                    "val_acc": eval_m.get("acc", float("nan")),
+                    "val_loss": eval_m.get("loss", float("nan")),
+                    "reward": rewards_map.get(nid, 0.0),
+                    "stake_penalty": pen.get("stake_mul", 0.0)
+                    if nid in penalties_map
+                    else 0.0,
+                    "rep_penalty": pen.get("rep_mul", 0.0)
+                    if nid in penalties_map
+                    else 0.0,
+                    "is_committee": int(nid in committee_set),
+                    "is_malicious": int(nid in truth_set),
+                    "detected": int(nid in detected_set),
+                }
+            )
 
 
     summary = contract.metrics.summary()
+
     # out_obj = {"results": results, "summary": summary, "config": config, "true_malicious": sorted(true_mal),
             #    "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
     print(f"Final summary: {summary[-1] if summary else {}}")
-    print(f"Round {r} summary:", result.get("metrics", {}))
+    log_file.close()
 
 if __name__ == "__main__":
     main()

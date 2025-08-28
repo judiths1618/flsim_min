@@ -16,9 +16,9 @@ class ContractConfig:
     rep_exponent: float = 1.0
     # detection: str = "flame"
     contribution: str = "metric"
-    reward: str = "default"
-    penalty: str = "default"
-    reputation: str = "default"
+    reward: str = "ours"
+    penalty: str = "ours"
+    reputation: str = "ours"
     selection: str = "stratified_softmax"
     settlement: str = "plans_engine"
     aggregation: str = "flame_agg"
@@ -90,8 +90,8 @@ class ComposedContract:
         reward_amt = self.reward.compute(node, self.nodes, in_committee=in_committee)
         if amount is not None:
             reward_amt = float(amount)
-        self.rewards[int(node_id)] = self.rewards.get(int(node_id), 0.0) + float(reward_amt)
-        print(f"node {node_id}'s credit reward amount: {reward_amt}")
+        self.rewards[int(node_id)] = float(reward_amt)
+        # print(f"node {node_id}'s credit reward amount: {reward_amt}, {node}")
         return float(reward_amt)
 
     def update_reputation(self, node_id: int, contribution: float, *, current_round: int) -> float:
@@ -154,7 +154,6 @@ class ComposedContract:
             if nid in self.nodes:
                 node = self.nodes[nid]
                 a = float(amt)
-                print(f"\n reward ammount: {a}\n")
                 # node.stake += a
                 node.balance += a   # add reward to balance
                 self.balances[nid] = self.balances.get(nid, 0.0) + a
@@ -170,7 +169,7 @@ class ComposedContract:
     def run_round(self, round_idx: int, detected_ids, updates: Optional[List[ModelUpdate]] = None,
                   true_malicious: Optional[Sequence[int]] = None):
 
-        print(f"Selected committee: {self.select_committee(round_idx)} for round {round_idx}")
+        # print(f"Selected committee: {self.select_committee(round_idx)} for round {round_idx}")
         plans = self.settlement.run(
             round_idx,
             self.nodes,
@@ -186,14 +185,7 @@ class ComposedContract:
         )
         # executed = self._execute_plans(plans)
         executed = self._execute_plans(plans, detected_ids, round_idx=round_idx)
-        print(f"{executed} \n detected ids: {detected_ids}")
-
-        # credit newly computed rewards immediately
-        for nid, r in plans.get("computed_rewards_next", {}).items():
-            r = float(r)
-            self.balances[nid] = self.balances.get(nid, 0.0) + r
-            if nid in self.nodes:
-                self.nodes[nid].balance += r
+        # print(f"{executed} \n detected ids: {detected_ids}")
 
         global_params = self.prev_global
 
@@ -221,7 +213,8 @@ class ComposedContract:
         truth_set: Set[int] = set(map(int, true_malicious or []))
         self.metrics.log(round_idx, detected_ids, truth_set)
         print(
-            f"[Round {round_idx}] Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}"
+            f"[Round {round_idx}] \n Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}; Committee: {self.select_committee(round_idx)}\n",
+            f""
         )
         
         out = {
@@ -234,11 +227,15 @@ class ComposedContract:
             "truth": sorted(truth_set),
             "plans": plans,
             "node_states": {nid: asdict(n) for nid, n in self.nodes.items()},
-            # "metrics": self.metrics.summary()[-1] if self.metrics.summary() else {},
+            "metrics": self.metrics.summary()[-1] if self.metrics.summary() else {},
         }
         self.features.clear()
         self.contributions.clear()
-        self.rewards.clear()
+        # self.rewards.clear()
+        self.rewards = {
+            int(nid): float(r)
+            for nid, r in plans.get("computed_rewards_next", {}).items()
+        }
+        # print(self.reward)
 
         return out
-
