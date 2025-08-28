@@ -1,14 +1,23 @@
 from __future__ import annotations
-from typing import Dict, Set
+from typing import Any, Dict, List, Tuple, Set
 import numpy as np
-import torch
-import hdbscan  # type: ignore
-from sklearn.cluster import DBSCAN  # type: ignore
+
+# Optional heavy dependencies. They are not strictly required for the simplified
+# detector used in tests, so we import them lazily and fall back to ``None`` when
+# unavailable.
+try:  # pragma: no cover - exercised only when deps missing
+    import torch  # type: ignore
+except Exception:  # pragma: no cover
+    torch = None  # type: ignore
+try:  # pragma: no cover - exercised only when deps missing
+    import hdbscan  # type: ignore
+except Exception:  # pragma: no cover
+    hdbscan = None  # type: ignore
+try:  # pragma: no cover - exercised only when deps missing
+    from sklearn.cluster import DBSCAN  # type: ignore
+except Exception:  # pragma: no cover
+    DBSCAN = None  # type: ignore
 from ...core.registry import DETECTION
-
-
-from typing import Any, Dict, List, Tuple
-import numpy as np
 
 def _to_1d_float(x: Any) -> np.ndarray:
     """Recursively flatten x -> 1D float array.

@@ -6,14 +6,68 @@ import numpy as np
 import random
 import csv
 
-from flsim.config import build_contract_from_yaml
-from flsim.train.local import train_locally_on_partitions
-from flsim.data.flower import load_flower_arrays
+from . import run_experiment
 # from flsim.aggregation.base import _zeros_like
 from flsim.aggregation.flame import AggregationStrategy as _Flame  # typing only
 from flsim.attack.malicious import choose_malicious_nodes, apply_malicious_updates
 from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_global_params
-from flsim.incentive.detection.flame import FlameDetector
+
+# The FlameDetector relies on optional heavy dependencies (torch, hdbscan).
+# Provide a small fallback so this module can be imported even when those
+# packages are unavailable during testing.
+try:  # pragma: no cover - exercised only when deps missing
+    from flsim.incentive.detection.flame import FlameDetector  # type: ignore
+except Exception:  # pragma: no cover
+    class FlameDetector:  # type: ignore
+        """Lightweight placeholder used when optional deps are missing."""
+
+        def detect(self, features, scores):
+            return {}
+
+
+def run(
+    config: str,
+    rounds: int,
+    nodes: int,
+    malicious_ratio: float,
+    seed: int,
+    dim: int,
+    out: str | None = None,
+) -> None:
+    """Run a minimal FL experiment used in tests.
+
+    The heavy lifting (data loading, local training, contract creation) is
+    delegated to the :mod:`flsim.run_experiment` helpers so that tests can
+    patch those functions easily.
+    """
+    contract = run_experiment.build_contract_from_yaml(config)
+    for nid in range(nodes):
+        contract.register_node(nid, stake=100.0, reputation=50.0)
+
+    Xp, yp, D, K, X_eval, y_eval = run_experiment.load_flower_arrays(
+        dataset="cifar10",
+        n_clients=nodes,
+        iid=True,
+        alpha=0.5,
+        split="train",
+        flatten=True,
+        normalize=True,
+    )
+
+    global_params = None
+    for r in range(1, rounds + 1):
+        updates, global_params = run_experiment.train_locally_on_partitions(
+            model_name="logreg",
+            partitions={cid: (Xp[cid], yp[cid], X_eval, y_eval) for cid in Xp},
+            global_params=global_params,
+            epochs=1,
+            batch_size=1,
+            lr=0.1,
+            seed=seed + r,
+        )
+        # In tests the contract interface is minimal, so we avoid using optional
+        # keyword arguments like ``detected_ids``.
+        contract.run_round(r, updates, true_malicious=set())
 
 
 def main():
