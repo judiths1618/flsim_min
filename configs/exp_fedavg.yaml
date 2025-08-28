@@ -1,0 +1,41 @@
+committee_size: 0
+committee_cooldown: 0
+rep_exponent: 0.0
+
+detection:
+  name: flame
+  params:
+    min_points: 4
+    min_cluster_frac: 0.2
+    dbscan_eps: 0.3
+    detect_score_thresh: 0.1
+
+aggregation:
+  name: fedavg
+
+selection:
+  name: stratified_softmax
+
+settlement:
+  name: plans_engine
+  params:
+    warmup_rounds: 0
+
+reward:
+  name: default
+  params:
+    base_reward: 0.0
+    hist_decay: 0.0
+    stake_weight: 0.0
+
+penalty:
+  name: default
+  params:
+    stake_penalty_factor: 0.0
+    rep_penalty_factor: 0.0
+
+reputation:
+  name: default
+  params:
+    X_c: 0.0
+    X_s: 0.0
