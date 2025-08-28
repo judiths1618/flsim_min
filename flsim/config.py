@@ -7,7 +7,11 @@ try:
 except Exception:
     yaml = None
 
-from .contracts.composed import ContractConfig, ComposedContract
+from .contracts.composed_ours import ContractConfig, ComposedContract
+from .contracts.composed_ours_zero import ContractConfig, ComposedContract
+from .contracts.composed_flame import ContractConfig, ComposedContract
+from .contracts.composed_fedavg import ContractConfig, ComposedContract
+
 
 def _load_yaml(path: str) -> Dict[str, Any]:
     print(f"load yaml path: {path}")

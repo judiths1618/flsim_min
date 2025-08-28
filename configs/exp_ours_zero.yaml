@@ -1,0 +1,56 @@
+
+
+detection:
+  name: flame
+  params:
+    min_points: 4
+    min_cluster_frac: 0.2
+    dbscan_eps: 0.3
+    detect_score_thresh: 0.1
+
+aggregation:
+  # name: fedavg
+  name: flame_agg
+  params:
+    percentile: 0.9
+    epsilon: 1e+6
+    delta: 1e-4
+    use_clipping: True
+    use_noise: False
+
+selection:
+  name: null
+  params:
+    committee_size: 0
+    rep_exponent: 0
+    cooldown: 0
+    num_strata: 0
+
+settlement:
+  name: plans_engine
+  params:
+    warmup_rounds: 1
+
+reward:
+  name: null
+  params:
+    base_reward: 0
+    hist_decay: 0.
+    stake_weight: 0.
+
+penalty:
+  name: null
+  params:
+    stake_penalty_factor: 0.
+    rep_penalty_factor: 0.
+
+reputation:
+  name: null
+  params:
+    X_c: 0.0
+    X_s: 0.0
+    rep_cap_early: 0.0
+    rep_cap_late: 0.0
+    rep_cap_round: 0
+    contrib_base: 0.0
+    contrib_thre: 0.0
