@@ -12,3 +12,6 @@ try:  # pragma: no cover - torch may be unavailable
     from . import nets as _nets  # noqa: F401
 except Exception:  # pragma: no cover
     _nets = None
+
+# device = "mps"  # Apple GPU
+# model.to(device); tensor.to(device)

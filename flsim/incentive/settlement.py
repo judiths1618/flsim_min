@@ -20,7 +20,7 @@ class SettlementEnginePlans:
         contributions: Dict[int, float],
         features: Dict[int, Dict[str, float]],
         pre_rewards: Dict[int, float],
-        detected,
+        detected: Dict[int, bool],
         committee: Sequence[int],
         reward_policy,
         penalty_policy,

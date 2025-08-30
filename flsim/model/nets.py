@@ -5,8 +5,16 @@ import numpy as np
 try:
     import torch
     from torch import nn
+    import torch, time
+    device = "cuda" if torch.cuda.is_available() else ("mps" if hasattr(torch.backends,"mps") and torch.backends.mps.is_available() else "cpu")
+    print("Using:", device)
+    x = torch.randn(8192, 8192, device=device)
+    t0=time.time(); y = x @ x; torch.cuda.synchronize() if device=="cuda" else None
+    print("OK, elapsed:", time.time()-t0, "s", y.norm().item())
+
 except Exception as e:  # pragma: no cover - torch is optional
     raise RuntimeError("PyTorch is required to use flsim.model.nets") from e
+
 
 from .base import BaseModel, register_model
 

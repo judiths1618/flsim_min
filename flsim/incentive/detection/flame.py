@@ -296,6 +296,7 @@ class FlameDetector:
             flagged = {nid: (nid not in admitted) for nid in ids}
             for nid in (set(scores.keys()) - set(ids)):
                 flagged[int(nid)] = bool(float(scores.get(nid, 0.0)) < self.detect_score_thresh)
+            print("flagged #: ", flagged)
             return flagged
 
         # Fallback: medoid + IQR

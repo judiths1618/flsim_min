@@ -58,7 +58,7 @@ class FlameV2Detector:
             if trigger_acc > self.trigger_acc_thresh or clean_acc < (1.0 - self.clean_acc_drop_thresh):
                 for cid in cluster_ids:
                     flagged[cid] = True
-
+        print("Flagged clients:", [cid for cid, flag in flagged.items() if flag])
         return flagged
 
     

@@ -1,7 +1,7 @@
 
 
 detection:
-  name: flame
+  name: flame_v2
   params:
     min_points: 4
     min_cluster_frac: 0.2

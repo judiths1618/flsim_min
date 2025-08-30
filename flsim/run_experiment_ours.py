@@ -33,12 +33,50 @@ from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_glo
 try:  # pragma: no cover - exercised only when deps missing
     from flsim.incentive.detection.flame import FlameDetector  # type: ignore
 except Exception:  # pragma: no cover
-    class FlameDetector:  # type: ignore
-        """Lightweight placeholder used when optional deps are missing."""
+    print("Warning: optional dependencies for FlameDetector missing, using placeholder.")
+    # class FlameDetector:  # type: ignore
+    #     """Lightweight placeholder used when optional deps are missing."""
 
-        def detect(self, features, scores):
-            return {}
+    #     def detect(self, features, scores):
+    #         return {}
 
+def robust_z_flags(values, thresh=1, tail="both"):
+    v = np.asarray(values, dtype=float)
+    print("values:", v)
+    med = np.median(v)
+    mad = np.median(np.abs(v - med)) + 1e-12  # avoid /0
+    rz = 0.6745 * (v - med) / mad              # robust z-score
+    print("robust z-scores:", rz)
+    if tail == "low":
+        return rz < -thresh
+    elif tail == "high":
+        return rz > thresh
+    
+    return np.abs(rz) > thresh
+# 计算 IQR
+def outlier_flags(values, k=5.5, tail="both"):
+    """
+    Return boolean mask for outliers based on IQR method.
+
+    Args:
+        values (array-like): numeric values
+        k (float): IQR multiplier (default=1.5)
+        tail (str): 'low', 'high', or 'both'
+
+    Returns:
+        np.ndarray[bool]: True for outliers
+    """
+    values = np.asarray(values)
+    print("values:", values)
+    q1, q3 = np.percentile(values, [25, 75])
+    iqr = q3 - q1
+    lower, upper = q1 - k * iqr, q3 + k * iqr
+    print(f"IQR: {iqr}, lower: {lower}, upper: {upper}")
+    if tail == "low":
+        return values < lower
+    elif tail == "high":
+        return values > upper
+    return (values < lower) | (values > upper)
 
 def run(
     config: str,
@@ -130,7 +168,7 @@ def main():
         "is_malicious",
         "detected",
     ]
-    log_file = open("fl_log.csv", "w", newline="")
+    log_file = open("./results/fl_log_ours.csv", "w", newline="")
     writer = csv.DictWriter(log_file, fieldnames=log_fields)
     writer.writeheader()
 
@@ -158,7 +196,7 @@ def main():
         explicit_ids=explicit,
         seed=42,
     )
-    print(f"[Info] Malicious nodes: {sorted(true_mal)} (behavior={args.mal_behavior})")
+    print(f"[Info] Malicious nodes: {sorted(true_mal)} (behavior={args.mal_behavior}, ratio={args.mal_frac})")
 
 
     # ------------- Initialize global parameters as None (the trainer will create them based on model) -------------
@@ -227,27 +265,44 @@ def main():
             }
             score_map[u.node_id] = float(m["acc"])
             print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"), u.metrics.get("val_acc"))
-        # 2. Detect suspicious clients using a simple accuracy threshold
-        # suspicious={}
-        acc_threshold = 0.5
-        loss_threshold = 10
-        suspicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if ((acc < acc_threshold) or (acc < acc_threshold and loss > loss_threshold))}
-        print(f"Detected suspicious clients (acc_Threshold < {acc_threshold} and loss_threshold > {loss_threshold}):", suspicious)
-
-        # 3. Additional detection via FLAME detector
-        flame_detector = FlameDetector()
-        flame_flags = flame_detector.detect(features_map, score_map)
-        flame_malicious = {nid for nid, flag in flame_flags.items() if flag}
-        if flame_malicious:
-            print("[Flame] Detected malicious clients:", flame_malicious)
-        suspicious.update(flame_malicious)
-
+                
         # We pass the updates into the contract per its interface.
         for u in updates:
             m = eval_metrics_map[u.node_id]
             contract.set_features(u.node_id, **features_map[u.node_id])
             contract.set_contribution(u.node_id, float(m['acc']))
             # contract.credit_reward(u.node_id, 10.0 * float(m['acc']))
+
+        # 2. Detect suspicious clients using a simple accuracy threshold
+        # suspicious={}
+        acc_threshold = 0.3
+        loss_threshold = 10
+        suspicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if ((acc < acc_threshold) or (acc < acc_threshold and loss > loss_threshold))}
+        print(f"Detected suspicious clients (acc_Threshold < {acc_threshold} and loss_threshold > {loss_threshold}):", suspicious)
+        # suspicious = detect_suspicious(node_ids, eval_accs, eval_losses, method="iqr", iqr_k=1.5)
+        # print("Suspicious (IQR):", suspicious)
+
+        print(f"contribution history before round {r}: {contract.contributions}")
+        # scores = contract.contributions
+        # node_ids = list(scores.keys())
+        # values   = list(scores.values())
+        # print("contribution values:", values)
+        # mask = outlier_flags(values, tail="low")
+        # suspicious = [nid for nid, m in zip(node_ids, mask) if m]
+
+        # print("Suspicious (IQR):", suspicious)
+        # exit()
+        # 3. Additional detection via FLAME detector
+        flame_detector = FlameDetector()
+        flame_flags = flame_detector.detect(features_map, score_map)
+        flame_malicious = {nid for nid, flag in flame_flags.items() if flag}
+        if suspicious == flame_malicious:
+            suspicious = set(suspicious)
+        elif suspicious.issubset(flame_malicious):
+            print("[Flame] Detected malicious clients:", flame_malicious)
+        if len(suspicious) == 0:
+            print("[Flame] Also detected via IQR:", flame_malicious)
+            suspicious = flame_malicious
 
 
         # Note: Contract will call aggregation which expects absolute params.
@@ -273,7 +328,7 @@ def main():
         rewards_map = plans.get("credit_rewards", {})
         penalties_map = plans.get("apply_penalties", {})
         committee_set = set(result.get("committee", []))
-        detected_set = set(result.get("detected", []))
+        # detected_set = set(result.get("detected", []))
         truth_set = set(result.get("truth", []))
 
         for nid, state in result["node_states"].items():
@@ -299,7 +354,8 @@ def main():
                     else 0.0,
                     "is_committee": int(nid in committee_set),
                     "is_malicious": int(nid in truth_set),
-                    "detected": int(nid in detected_set),
+                    # "detected": int(nid in detected_set),
+                    "detected": int(nid in suspicious),
                 }
             )
 

@@ -14,11 +14,11 @@ class ContractConfig:
     committee_size: int = 5
     committee_cooldown: int = 3
     rep_exponent: float = 1.0
-    # detection: str = "flame"
+    detection: str = "flame"
     contribution: str = "metric"
     reward: str = "ours"
-    penalty: str = "default"
-    reputation: str = "default"
+    penalty: str = "ours"
+    reputation: str = "ours"
     selection: str = "stratified_softmax"
     settlement: str = "plans_engine"
     aggregation: str = "flame_agg"
@@ -28,7 +28,7 @@ class ComposedContract:
     def __init__(self, cfg: ContractConfig | None = None, strategy_params: dict | None = None):
         self.cfg = cfg or ContractConfig()
 
-        # self.detector = DETECTION.get(self.cfg.detection)(**(strategy_params or {}).get('detection', {}))
+        self.detector = DETECTION.get(self.cfg.detection)(**(strategy_params or {}).get('detection', {}))
         self.contrib = CONTRIB.get(self.cfg.contribution)(**(strategy_params or {}).get('contribution', {}))
         self.reward = REWARD.get(self.cfg.reward)(**(strategy_params or {}).get('reward', {}))
         self.penalty = PENALTY.get(self.cfg.penalty)(**(strategy_params or {}).get('penalty', {}))
@@ -144,6 +144,8 @@ class ComposedContract:
                 arr.append(float(c))
                 if len(arr) > 200:
                     del arr[: len(arr) - 200]
+        # detect malicious nodes through the contribution features and compare with the given detected ids
+
         # apply penalties according to the detection
         for nid, d in plans.get("apply_penalties", {}).items():
             if nid in detected_ids:
@@ -186,7 +188,7 @@ class ComposedContract:
         # executed = self._execute_plans(plans)
         executed = self._execute_plans(plans, detected_ids, round_idx=round_idx)
         # print(f"{executed} \n detected ids: {detected_ids}")
-
+        
         global_params = self.prev_global
 
         if updates:
@@ -212,10 +214,7 @@ class ComposedContract:
 
         truth_set: Set[int] = set(map(int, true_malicious or []))
         self.metrics.log(round_idx, detected_ids, truth_set)
-        print(
-            f"[Round {round_idx}] \n Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}; Committee: {self.select_committee(round_idx)}\n",
-            f""
-        )
+        
         
         out = {
             "round": round_idx,
@@ -237,5 +236,8 @@ class ComposedContract:
             for nid, r in plans.get("computed_rewards_next", {}).items()
         }
         # print(self.reward)
-
+        print(
+            f"[Round {round_idx}] \n Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}; Committee: {self.select_committee(round_idx)}\n",
+            f""
+        )
         return out
