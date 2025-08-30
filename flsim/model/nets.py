@@ -141,3 +141,37 @@ class CNNMnist(_TorchModel):
             nn.ReLU(),
             nn.Linear(128, self.num_classes),
         )
+
+
+
+
+@register_model("cnn_cifar")
+class CNNCifar(_TorchModel):
+    """Convolutional network tailored for CIFAR-10 images."""
+
+    def __init__(self, input_dim: int, num_classes: int, **kwargs: Any) -> None:
+        super().__init__(input_dim, num_classes, **kwargs)
+
+    def _build_model(self) -> nn.Module:
+        return nn.Sequential(
+            nn.Unflatten(1, (3, 32, 32)),
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Flatten(),
+            nn.Linear(64 * 8 * 8, 256),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(256, self.num_classes),
+        )

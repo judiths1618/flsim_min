@@ -25,7 +25,7 @@ load_flower_arrays = run_experiment.load_flower_arrays
 # from flsim.aggregation.base import _zeros_like
 from flsim.aggregation.flame import AggregationStrategy as _Flame  # typing only
 from flsim.attack.malicious import choose_malicious_nodes, apply_malicious_updates
-from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_global_params
+from flsim.eval.global_evaluation import evaluate_global_on_flower, evaluate_global_params, evaluate_cnn_cifar_on_flower, evaluate_cnn_cifar
 
 # The FlameDetector relies on optional heavy dependencies (torch, hdbscan).
 # Provide a small fallback so this module can be imported even when those
@@ -105,7 +105,7 @@ def main():
     ap.add_argument("--mal-behavior", type=str, default="scale",
                     choices=["scale", "signflip", "zero", "noise"])
     ap.add_argument("--mal-scale", type=float, default=-10.0, help="scale 行为的缩放因子")
-    ap.add_argument("--mal-noise-std", type=float, default=0.1, help="noise 行为的噪声标准差")
+    ap.add_argument("--mal-noise-std", type=float, default=0.5, help="noise 行为的噪声标准差")
     
     ap.add_argument("--defense", default="flame")
     args = ap.parse_args()
@@ -214,7 +214,7 @@ def main():
         print("=== Per-client test acc ===")
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-            print(float(u.metrics.get("acc")))
+            print(float(u.metrics.get("val_acc")))
             eval_accs.append(m["acc"])
             eval_losses.append(m["loss"])
             node_ids.append(u.node_id)
@@ -223,14 +223,15 @@ def main():
                 "flat_update": u.params,
                 "claimed_acc": float(u.metrics.get("acc")),
                 "eval_acc": float(m["acc"]),
+                "val_acc":float(u.metrics.get("val_acc"))
             }
             score_map[u.node_id] = float(m["acc"])
-            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"))
+            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"), u.metrics.get("val_acc"))
         # 2. Detect suspicious clients using a simple accuracy threshold
         # suspicious={}
-        acc_threshold = 0.
+        acc_threshold = 0.5
         loss_threshold = 10
-        suspicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if (acc < acc_threshold and loss > loss_threshold)}
+        suspicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if ((acc < acc_threshold) or (acc < acc_threshold and loss > loss_threshold))}
         print(f"Detected suspicious clients (acc_Threshold < {acc_threshold} and loss_threshold > {loss_threshold}):", suspicious)
 
         # 3. Additional detection via FLAME detector

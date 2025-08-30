@@ -93,3 +93,119 @@ def evaluate_global_on_flower(
         X = X.reshape(X.shape[0], -1)
 
     return evaluate_global_params(model_name, global_params, X, y, batch_size=batch_size)
+
+
+# ---------------------------------------------------------------------------
+# Convenience wrappers for specific models
+
+
+def evaluate_cnn_cifar(
+    model_name: str,
+    global_params: Dict[str, np.ndarray],
+    X: np.ndarray,
+    y: np.ndarray,
+    # global_params: Dict[str, np.ndarray],
+    # X: np.ndarray,
+    # y: np.ndarray,
+    *,
+    batch_size: int = 2048,
+) -> Dict[str, float]:
+    """Evaluate ``cnn_cifar`` global parameters on arrays ``X`` and ``y``."""
+
+    return evaluate_global_params("cnn_cifar", global_params, X, y, batch_size=batch_size)
+
+
+def evaluate_cnn_mnist(
+    global_params: Dict[str, np.ndarray],
+    X: np.ndarray,
+    y: np.ndarray,
+    *,
+    batch_size: int = 2048,
+) -> Dict[str, float]:
+    """Evaluate ``cnn_mnist`` global parameters on arrays ``X`` and ``y``."""
+
+    return evaluate_global_params("cnn_mnist", global_params, X, y, batch_size=batch_size)
+
+
+def evaluate_logreg(
+    global_params: Dict[str, np.ndarray],
+    X: np.ndarray,
+    y: np.ndarray,
+    *,
+    batch_size: int = 2048,
+) -> Dict[str, float]:
+    """Evaluate ``logreg`` global parameters on arrays ``X`` and ``y``."""
+
+    return evaluate_global_params("logreg", global_params, X, y, batch_size=batch_size)
+
+
+def evaluate_cnn_cifar_on_flower(
+    global_params: Dict[str, np.ndarray],
+    *,
+    dataset: str = "cifar10",
+    split: str = "test",
+    flatten: bool = True,
+    normalize: bool = True,
+    seed: int = 123,
+    batch_size: int = 2048,
+) -> Dict[str, float]:
+    """Evaluate ``cnn_cifar`` global parameters on a Flower dataset."""
+
+    return evaluate_global_on_flower(
+        "cnn_cifar",
+        global_params,
+        dataset=dataset,
+        split=split,
+        flatten=flatten,
+        normalize=normalize,
+        seed=seed,
+        batch_size=batch_size,
+    )
+
+
+def evaluate_cnn_mnist_on_flower(
+    global_params: Dict[str, np.ndarray],
+    *,
+    dataset: str = "mnist",
+    split: str = "test",
+    flatten: bool = True,
+    normalize: bool = True,
+    seed: int = 123,
+    batch_size: int = 2048,
+) -> Dict[str, float]:
+    """Evaluate ``cnn_mnist`` global parameters on a Flower dataset."""
+
+    return evaluate_global_on_flower(
+        "cnn_mnist",
+        global_params,
+        dataset=dataset,
+        split=split,
+        flatten=flatten,
+        normalize=normalize,
+        seed=seed,
+        batch_size=batch_size,
+    )
+
+
+def evaluate_logreg_on_flower(
+    global_params: Dict[str, np.ndarray],
+    *,
+    dataset: str = "cifar10",
+    split: str = "test",
+    flatten: bool = True,
+    normalize: bool = True,
+    seed: int = 123,
+    batch_size: int = 2048,
+) -> Dict[str, float]:
+    """Evaluate ``logreg`` global parameters on a Flower dataset."""
+
+    return evaluate_global_on_flower(
+        "logreg",
+        global_params,
+        dataset=dataset,
+        split=split,
+        flatten=flatten,
+        normalize=normalize,
+        seed=seed,
+        batch_size=batch_size,
+    )
