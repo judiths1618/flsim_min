@@ -149,26 +149,26 @@ def run(
 def main():
     ap = argparse.ArgumentParser(description="Local model training on Flower partitions (keeps original logic intact)")
     ap.add_argument("--config", required=True, help="Path to YAML config for detection/aggregation/etc.")
-    ap.add_argument("--dataset", default="cifar10")
-    ap.add_argument("--clients", type=int, default=10)
+    ap.add_argument("--dataset", default="mnist")
+    ap.add_argument("--clients", type=int, default=20)
     ap.add_argument("--iid", action="store_true")
     ap.add_argument("--alpha", type=float, default=0.5)
     ap.add_argument("--split", default="train")
     ap.add_argument("--model", default="logreg")
-    ap.add_argument("--epochs", type=int, default=1)
+    ap.add_argument("--epochs", type=int, default=10)
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--lr", type=float, default=0.1)
-    ap.add_argument("--rounds", type=int, default=3)
+    ap.add_argument("--rounds", type=int, default=10)
 
     # —— 新增恶意相关参数 ——
-    ap.add_argument("--mal-frac", type=float, default=0.2, help="恶意节点比例（0~1）")
+    ap.add_argument("--mal-frac", type=float, default=0.3, help="恶意节点比例（0~1）")
     ap.add_argument("--mal-ids", type=str, default="", help="显式恶意节点ID，逗号分隔，如 1,3,5")
     ap.add_argument("--mal-behavior", type=str, default="scale",
                     choices=["scale", "signflip", "zero", "noise"])
     ap.add_argument("--mal-scale", type=float, default=-10.0, help="scale 行为的缩放因子")
     ap.add_argument("--mal-noise-std", type=float, default=0.5, help="noise 行为的噪声标准差")
     
-    ap.add_argument("--defense", default="flame")
+    # ap.add_argument("--defense", default="flame")
     args = ap.parse_args()
 
     # --------- Build composed contract from YAML --------
@@ -386,7 +386,7 @@ def main():
 
     summary = contract.metrics.summary()
 
-    # Calculate detection statistics across rounds
+        # Calculate detection statistics across rounds
     if summary:
         prec = np.array([s.get("precision", 0.0) for s in summary], dtype=float)
         rec = np.array([s.get("recall", 0.0) for s in summary], dtype=float)
@@ -395,28 +395,46 @@ def main():
         fn = np.array([s.get("fn", 0) for s in summary], dtype=float)
         print(
             "Detection over rounds:"
-            f"\n  Precision: {prec.mean():.4f} ± {prec.std():.4f}"
-            f"\n  Recall:    {rec.mean():.4f} ± {rec.std():.4f}"
-            f"\n  TP:        {tp.mean():.4f} ± {tp.std():.4f}"
-            f"\n  FP:        {fp.mean():.4f} ± {fp.std():.4f}"
-            f"\n  FN:        {fn.mean():.4f} ± {fn.std():.4f}"
+            f"\n  Precision: {prec.mean():.3f} ± {prec.std():.3f}"
+            f"\n  Recall:    {rec.mean():.3f} ± {rec.std():.3f}"
+            f"\n  TP:        {tp.mean():.3f} ± {tp.std():.3f}"
+            f"\n  FP:        {fp.mean():.3f} ± {fp.std():.3f}"
+            f"\n  FN:        {fn.mean():.3f} ± {fn.std():.3f}"
         )
 
     # Balance statistics on final round
     final_balances = results[-1].get("balances", {}) if results else {}
-    benign_bal = sum(v for nid, v in final_balances.items() if nid not in true_mal)
-    mal_bal = sum(v for nid, v in final_balances.items() if nid in true_mal)
+    benign_vals = [v for nid, v in final_balances.items() if nid not in true_mal]
+    mal_vals = [v for nid, v in final_balances.items() if nid in true_mal]
+
+    benign_bal = float(sum(benign_vals))
+    mal_bal = float(sum(mal_vals))
+    benign_mean = float(np.mean(benign_vals)) if benign_vals else 0.0
+    benign_std = float(np.std(benign_vals)) if benign_vals else 0.0
+    mal_mean = float(np.mean(mal_vals)) if mal_vals else 0.0
+    mal_std = float(np.std(mal_vals)) if mal_vals else 0.0
+
     fairness = jains_fairness(final_balances.values())
+    benign_fairness = jains_fairness(benign_vals)
+    mal_fairness = jains_fairness(mal_vals)
     gini = gini_coefficient(final_balances.values())
+    benign_gini = gini_coefficient(benign_vals)
+    mal_gini = gini_coefficient(mal_vals)
     print(
-        f"Balances - benign total: {benign_bal:.4f}, malicious total: {mal_bal:.4f}\n"
-        f"Jain's Fairness: {fairness:.4f}\nGini Coefficient: {gini:.4f}"
+        "Balances - "
+        f"benign total: {benign_bal:.4f} (mean {benign_mean:.4f} ± {benign_std:.4f}), "
+        f"malicious total: {mal_bal:.4f} (mean {mal_mean:.4f} ± {mal_std:.4f})\n"
+        
+        f"Benign fairness: {benign_fairness:.4f}, Malicious fairness: {mal_fairness:.4f}\n"
+        f"Benign Gini: {benign_gini:.4f}, Malicious Gini: {mal_gini:.4f}\n"
+        
+        f"Jain's Fairness: {fairness:.4f}\nGini Coefficient: {gini:.4f}\n"
     )
 
     # out_obj = {"results": results, "summary": summary, "config": config, "true_malicious": sorted(true_mal),
     #    "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
-    print(f"Final summary: {summary[-1] if summary else {}}")
-    
+    # print(f"Final summary: {summary[-1] if summary else {}}")
+
     log_file.close()
 
 if __name__ == "__main__":
