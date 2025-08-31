@@ -86,3 +86,21 @@ class DefaultReward:
         print(f"reward computed: {reward}, committee bonus: {committee_bonus}, total contribution: {node.contrib_history} \n")
         return float(max(reward, 0.0))
 
+
+@REWARD.register("none")
+class NoOpReward:
+    """Reward strategy that always returns zero."""
+
+    def __init__(self, *args, **kwargs) -> None:  # pragma: no cover - trivial
+        pass
+
+    def compute(
+        self,
+        node: NodeState,  # noqa: D401 - interface compatibility
+        nodes: Dict[int, NodeState],
+        *,
+        in_committee: bool = False,
+    ) -> float:
+        """Return zero reward regardless of inputs."""
+        return 0.0
+
