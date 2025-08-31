@@ -102,3 +102,26 @@ class SettlementEnginePlans:
         }
         # print(f"Plans: {plans}")
         return plans
+
+
+@SETTLEMENT.register("none")
+class NoSettlement:
+    """Settlement engine that performs no actions."""
+
+    def __init__(self, params: SettlementParams | None = None, **kwargs) -> None:  # noqa: D401
+        pass
+
+    def run(
+        self,
+        round_idx: int,
+        nodes: Dict[int, NodeState],
+        contributions: Dict[int, float],
+        features: Dict[int, Dict[str, float]],
+        pre_rewards: Dict[int, float],
+        detected,
+        committee: Sequence[int],
+        reward_policy,
+        penalty_policy,
+        reputation_policy,
+    ) -> Dict[str, Any]:
+        return {}

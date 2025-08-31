@@ -61,3 +61,14 @@ class StratifiedSoftmaxSelector:
             pool = [n for n in ordered if cooldowns.get(n.node_id, 0.0) <= 0.0 and n.node_id not in chosen]
             selected.extend([n.node_id for n in pool[:need]])
         return selected[: self.p.committee_size]
+
+
+@SELECTION.register("none")
+class NoSelection:
+    """Selector that always returns an empty committee."""
+
+    def __init__(self, params: SelectionParams | None = None, **kwargs) -> None:  # noqa: D401
+        pass
+
+    def select(self, nodes: Dict[int, NodeState], cooldowns: Dict[int, float]) -> List[int]:
+        return []

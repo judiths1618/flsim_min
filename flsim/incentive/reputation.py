@@ -47,3 +47,14 @@ class DefaultReputation:
 @REPUTATION.register("ours")
 class OursReputation(DefaultReputation):
     pass
+
+
+@REPUTATION.register("none")
+class NoReputation:
+    """Reputation policy that performs no updates."""
+
+    def __init__(self, params: ReputationParams | None = None, **kwargs) -> None:  # noqa: D401
+        self.p = params or ReputationParams(**kwargs) if kwargs else (params or ReputationParams())
+
+    def update(self, node: NodeState, contribution: float, *, current_round: int) -> float:
+        return float(node.reputation)

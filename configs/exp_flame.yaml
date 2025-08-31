@@ -3,8 +3,8 @@ detection:
   name: flame
 aggregation:
   name: flame_agg       # FLAME aggregation
-selection: null
-reward: null
-penalty: null
-reputation: null
-settlement: null
+selection: none
+reward: none
+penalty: none
+reputation: none
+settlement: none

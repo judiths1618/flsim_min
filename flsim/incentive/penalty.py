@@ -19,3 +19,11 @@ class DefaultPenalty:
 @PENALTY.register("ours")
 class OursPenalty(DefaultPenalty):
     pass
+
+
+@PENALTY.register("none")
+class NoPenalty:
+    """Penalty policy that leaves stake and reputation untouched."""
+
+    def __init__(self, params: PenaltyParams | None = None, **kwargs) -> None:  # noqa: D401
+        self.p = PenaltyParams(stake_penalty_factor=0.0, rep_penalty_factor=0.0)

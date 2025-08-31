@@ -48,16 +48,10 @@ def main():
     log_fields = [
         "round",
         "node_id",
-        "stake",
-        "reputation",
         "train_acc",
         "train_loss",
         "val_acc",
         "val_loss",
-        "reward",
-        "stake_penalty",
-        "rep_penalty",
-        "is_committee",
         "is_malicious",
         "detected",
     ]
@@ -67,7 +61,7 @@ def main():
 
     # ---------- Register nodes with initial stake and reputation ----------
     for nid in range(0, nodes):
-        contract.register_node(nid, stake=100.0, reputation=50.0)
+        contract.register_node(nid, stake=0.0, reputation=0.0)
     
 
     # ---------- Load client partitions (X, y) -----------
@@ -199,35 +193,20 @@ def main():
         results.append(result)
         # print(f"Round {r} result:", result)
 
-        plans = result.get("plans", {})
-        rewards_map = plans.get("credit_rewards", {})
-        penalties_map = plans.get("apply_penalties", {})
-        committee_set = set(result.get("committee", []))
         detected_set = set(result.get("detected", []))
         truth_set = set(result.get("truth", []))
 
         for nid, state in result["node_states"].items():
             train_m = train_metrics_map.get(nid, {})
             eval_m = eval_metrics_map.get(nid, {})
-            pen = penalties_map.get(nid, {})
             writer.writerow(
                 {
                     "round": r,
                     "node_id": nid,
-                    "stake": state["stake"],
-                    "reputation": state["reputation"],
                     "train_acc": train_m.get("acc", float("nan")),
                     "train_loss": train_m.get("loss", float("nan")),
                     "val_acc": eval_m.get("acc", float("nan")),
                     "val_loss": eval_m.get("loss", float("nan")),
-                    "reward": rewards_map.get(nid, 0.0),
-                    "stake_penalty": pen.get("stake_mul", 0.0)
-                    if nid in penalties_map
-                    else 0.0,
-                    "rep_penalty": pen.get("rep_mul", 0.0)
-                    if nid in penalties_map
-                    else 0.0,
-                    "is_committee": int(nid in committee_set),
                     "is_malicious": int(nid in truth_set),
                     "detected": int(nid in detected_set),
                 }
