@@ -356,6 +356,7 @@ def main():
                     "is_malicious": int(nid in truth_set),
                     # "detected": int(nid in detected_set),
                     "detected": int(nid in suspicious),
+
                 }
             )
 
@@ -365,6 +366,7 @@ def main():
     # out_obj = {"results": results, "summary": summary, "config": config, "true_malicious": sorted(true_mal),
             #    "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
     print(f"Final summary: {summary[-1] if summary else {}}")
+    
     log_file.close()
 
 if __name__ == "__main__":

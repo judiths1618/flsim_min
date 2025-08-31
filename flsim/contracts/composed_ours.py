@@ -237,7 +237,7 @@ class ComposedContract:
         }
         # print(self.reward)
         print(
-            f"[Round {round_idx}] \n Detected malicious: {sorted(detected_ids)}; Truth: {sorted(truth_set)}; Committee: {self.select_committee(round_idx)}\n",
+            f"[Round {round_idx}] \n Detected malicious: {len(sorted(detected_ids))}; Truth: {len(sorted(truth_set))}; Committee: {self.select_committee(round_idx)}\n",
             f""
         )
         return out

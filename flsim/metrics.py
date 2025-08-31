@@ -23,8 +23,8 @@ class DetectionMetrics:
             recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
             out.append({
                 "round": r,
-                "detected": sorted(det),
-                "true_malicious": sorted(tru),
+                "detected": len(sorted(det)),
+                "true_malicious": len(sorted(tru)),
                 "precision": precision,
                 "recall": recall,
                 "tp": tp, "fp": fp, "fn": fn
