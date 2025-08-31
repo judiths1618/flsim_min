@@ -55,8 +55,11 @@ class ComposedContract:
         self.cooldowns: Dict[int, float] = {}
         self.metrics = DetectionMetrics()
 
-    def register_node(self, node_id: int, *, stake: float, reputation: float):
-        self.nodes[node_id] = NodeState(node_id=node_id, stake=float(stake), reputation=float(reputation))
+    def register_node(self, node_id: int, *, stake: float = 0.0, reputation: float = 0.0):
+        """Register a node with optional initial stake and reputation."""
+        self.nodes[node_id] = NodeState(
+            node_id=node_id, stake=float(stake), reputation=float(reputation)
+        )
         self.cooldowns.setdefault(node_id, 0.0)
 
     def set_features(self, node_id: int, **feats: Any):

@@ -19,38 +19,16 @@ aggregation:
     use_noise: False
 
 selection:
-  name: null
-  params:
-    committee_size: 0
-    rep_exponent: 0
-    cooldown: 0
-    num_strata: 0
+  name: none
 
 settlement:
-  name: plans_engine
-  params:
-    warmup_rounds: 1
+  name: none
 
 reward:
-  name: null
-  params:
-    base_reward: 0
-    hist_decay: 0.
-    stake_weight: 0.
+  name: none
 
 penalty:
-  name: null
-  params:
-    stake_penalty_factor: 0.
-    rep_penalty_factor: 0.
+  name: none
 
 reputation:
-  name: null
-  params:
-    X_c: 0.0
-    X_s: 0.0
-    rep_cap_early: 0.0
-    rep_cap_late: 0.0
-    rep_cap_round: 0
-    contrib_base: 0.0
-    contrib_thre: 0.0
+  name: none

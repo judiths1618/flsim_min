@@ -102,3 +102,36 @@ class SettlementEnginePlans:
         }
         # print(f"Plans: {plans}")
         return plans
+
+
+@SETTLEMENT.register("none")
+class NoOpSettlement:
+    """Settlement strategy that performs no incentives or penalties."""
+
+    def __init__(self, *args, **kwargs) -> None:  # pragma: no cover - trivial
+        pass
+
+    def run(
+        self,
+        round_idx: int,
+        nodes: Dict[int, NodeState],
+        contributions: Dict[int, float],
+        features: Dict[int, Dict[str, float]],
+        pre_rewards: Dict[int, float],
+        detected: Dict[int, bool],
+        committee,
+        reward_policy,
+        penalty_policy,
+        reputation_policy,
+    ) -> Dict[str, Any]:
+        # Only propagate participation and contribution history; everything else stays unchanged
+        plans: Dict[str, Any] = {
+            "apply_penalties": {},
+            "credit_rewards": {},
+            "set_reputations": {},
+            "note_participation": set(contributions.keys()),
+            "append_contrib": {nid: float(contributions.get(nid, 0.0)) for nid in nodes},
+            "detected": detected,
+            "computed_rewards_next": {nid: 0.0 for nid in nodes},
+        }
+        return plans
