@@ -78,6 +78,29 @@ def outlier_flags(values, k=5.5, tail="both"):
         return values > upper
     return (values < lower) | (values > upper)
 
+def jains_fairness(values):
+    """Compute Jain's fairness index for a list of values."""
+    arr = np.asarray(list(values), dtype=float)
+    if arr.size == 0 or np.all(arr == 0):
+        return 0.0
+    num = arr.sum() ** 2
+    den = arr.size * np.sum(arr ** 2)
+    return float(num / den) if den > 0 else 0.0
+
+
+def gini_coefficient(values):
+    """Compute the Gini coefficient for a list of values."""
+    arr = np.asarray(list(values), dtype=float)
+    if arr.size == 0:
+        return 0.0
+    if np.any(arr < 0):
+        arr = arr - arr.min()
+    arr = np.sort(arr)
+    n = arr.size
+    index = np.arange(1, n + 1)
+    return float((2 * np.sum(index * arr)) / (n * arr.sum()) - (n + 1) / n)
+
+
 def run(
     config: str,
     rounds: int,
@@ -363,8 +386,35 @@ def main():
 
     summary = contract.metrics.summary()
 
+    # Calculate detection statistics across rounds
+    if summary:
+        prec = np.array([s.get("precision", 0.0) for s in summary], dtype=float)
+        rec = np.array([s.get("recall", 0.0) for s in summary], dtype=float)
+        tp = np.array([s.get("tp", 0) for s in summary], dtype=float)
+        fp = np.array([s.get("fp", 0) for s in summary], dtype=float)
+        fn = np.array([s.get("fn", 0) for s in summary], dtype=float)
+        print(
+            "Detection over rounds:"
+            f"\n  Precision: {prec.mean():.4f} ± {prec.std():.4f}"
+            f"\n  Recall:    {rec.mean():.4f} ± {rec.std():.4f}"
+            f"\n  TP:        {tp.mean():.4f} ± {tp.std():.4f}"
+            f"\n  FP:        {fp.mean():.4f} ± {fp.std():.4f}"
+            f"\n  FN:        {fn.mean():.4f} ± {fn.std():.4f}"
+        )
+
+    # Balance statistics on final round
+    final_balances = results[-1].get("balances", {}) if results else {}
+    benign_bal = sum(v for nid, v in final_balances.items() if nid not in true_mal)
+    mal_bal = sum(v for nid, v in final_balances.items() if nid in true_mal)
+    fairness = jains_fairness(final_balances.values())
+    gini = gini_coefficient(final_balances.values())
+    print(
+        f"Balances - benign total: {benign_bal:.4f}, malicious total: {mal_bal:.4f}\n"
+        f"Jain's Fairness: {fairness:.4f}\nGini Coefficient: {gini:.4f}"
+    )
+
     # out_obj = {"results": results, "summary": summary, "config": config, "true_malicious": sorted(true_mal),
-            #    "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
+    #    "malicious_ratio": malicious_ratio, "nodes": nodes, "rounds": rounds}
     print(f"Final summary: {summary[-1] if summary else {}}")
     
     log_file.close()
