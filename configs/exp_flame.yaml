@@ -1,8 +1,19 @@
 # configs/exp_flame.yaml
 detection:
   name: flame
+  params:
+    min_points: 4
+    min_cluster_frac: 0.2
+    dbscan_eps: 0.3
+    detect_score_thresh: 0.1
 aggregation:
   name: flame_agg       # FLAME aggregation
+  params:
+    percentile: 0.9
+    epsilon: 1e+6
+    delta: 1e-4
+    use_clipping: True
+    use_noise: True
 selection:
   name: none
 reward:

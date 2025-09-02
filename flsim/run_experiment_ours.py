@@ -8,6 +8,8 @@ import csv
 import os
 import sys
 
+random.seed(42)
+np.random.seed(42)
 # When executed as a script (``python flsim/run_experiment_ours.py``) the
 # package-relative imports fail because ``__package__`` is empty. Adjust the
 # path in that case so the module can still resolve ``flsim.run_experiment``.
@@ -191,7 +193,7 @@ def main():
         "is_malicious",
         "detected",
     ]
-    log_file = open("./results/fl_log_ours.csv", "w", newline="")
+    log_file = open(f"./results/fl_log_ours_{args.mal_behavior}_{args.dataset}_{args.model}.csv", "w", newline="")
     writer = csv.DictWriter(log_file, fieldnames=log_fields)
     writer.writeheader()
 
@@ -275,7 +277,7 @@ def main():
         print("=== Per-client test acc ===")
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-            print(float(u.metrics.get("val_acc")))
+            # print(float(u.metrics.get("val_acc")))
             eval_accs.append(m["acc"])
             eval_losses.append(m["loss"])
             node_ids.append(u.node_id)
@@ -287,7 +289,7 @@ def main():
                 "val_acc":float(u.metrics.get("val_acc"))
             }
             score_map[u.node_id] = float(m["acc"])
-            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"), u.metrics.get("val_acc"))
+            # print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"), u.metrics.get("val_acc"))
                 
         # We pass the updates into the contract per its interface.
         for u in updates:
@@ -298,36 +300,56 @@ def main():
 
         # 2. Detect suspicious clients using a simple accuracy threshold
         # suspicious={}
-        acc_threshold = 0.3
-        loss_threshold = 10
-        suspicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if ((acc < acc_threshold) or (acc < acc_threshold and loss > loss_threshold))}
-        print(f"Detected suspicious clients (acc_Threshold < {acc_threshold} and loss_threshold > {loss_threshold}):", suspicious)
+        # acc_threshold = 0.5
+        # loss_threshold = 10
+        # suspicious = {nid for nid, acc, loss in zip(node_ids, eval_accs, eval_losses) if ((acc < acc_threshold) or (acc < acc_threshold and loss > loss_threshold))}
+        # print(f"Detected suspicious clients (acc_Threshold < {acc_threshold} and loss_threshold > {loss_threshold}):", suspicious)
         # suspicious = detect_suspicious(node_ids, eval_accs, eval_losses, method="iqr", iqr_k=1.5)
         # print("Suspicious (IQR):", suspicious)
 
-        print(f"contribution history before round {r}: {contract.contributions}")
-        # scores = contract.contributions
-        # node_ids = list(scores.keys())
-        # values   = list(scores.values())
-        # print("contribution values:", values)
-        # mask = outlier_flags(values, tail="low")
-        # suspicious = [nid for nid, m in zip(node_ids, mask) if m]
-
-        # print("Suspicious (IQR):", suspicious)
+        # print(f"contribution history before round {r}: {contract.contributions}")
+        
         # exit()
         # 3. Additional detection via FLAME detector
         flame_detector = FlameDetector()
         flame_flags = flame_detector.detect(features_map, score_map)
         flame_malicious = {nid for nid, flag in flame_flags.items() if flag}
-        if suspicious == flame_malicious:
-            suspicious = set(suspicious)
-        elif suspicious.issubset(flame_malicious):
+        if flame_malicious:
             print("[Flame] Detected malicious clients:", flame_malicious)
-        if len(suspicious) == 0:
-            print("[Flame] Also detected via IQR:", flame_malicious)
-            suspicious = flame_malicious
+            # suspicious = flame_malicious
+        
 
+        # 4. Historical contribution-based detection
+        suspicious: set[int] = set()
+        history_window = 3
+        # collect rolling averages over the window for each client
+        history_avgs: dict[int, float] = {}
+        for nid, state in contract.nodes.items():
+            history = list(state.contrib_history)
+            if nid in contract.contributions:
+                history.append(contract.contributions[nid])
+            if len(history) >= history_window:
+                history_avgs[nid] = float(np.mean(history[-history_window:]))
 
+        history_suspicious: set[int] = set()
+        if history_avgs:
+            # adaptively pick threshold from distribution (10th percentile --> bottom 30% are suspicious)
+            history_thresh = np.percentile(list(history_avgs.values()), args.mal_frac * 100)
+            history_suspicious = {nid for nid, avg in history_avgs.items() if avg < history_thresh}
+            if history_suspicious:
+                print("[History] Low contribution clients:", sorted(history_suspicious),
+                      f"(threshold={history_thresh:.2f})")
+        suspicious = set(suspicious).union(history_suspicious)
+        print(f"[history] Detected suspicious clients:", history_suspicious)
+
+        if not suspicious:      # if no suspicious yet, 
+            suspicious = set(flame_malicious) # use flame results if any
+        elif suspicious.isdisjoint(flame_malicious): # if no overlap, keep history ones
+            suspicious = set(suspicious) # keep history ones
+        else:   # if overlap, take union
+            suspicious = set(suspicious).union(flame_malicious)
+
+        print(f"Final suspicious clients for round {r}:", suspicious)
         # Note: Contract will call aggregation which expects absolute params.
         result = contract.run_round(
             r, detected_ids=suspicious, updates=updates, true_malicious=true_mal
@@ -341,7 +363,6 @@ def main():
                                          X_eval, y_eval)
         print(f"[Eval] Global after round {r}: acc={eval_metrics2['acc']:.4f}, loss={eval_metrics2['loss']:.4f}\n")
 
-        # print(result["node_states"])
         # Include evaluation metrics in the round results for downstream analysis
         result["metrics"] = eval_metrics2
         results.append(result)
@@ -379,7 +400,6 @@ def main():
                     "is_malicious": int(nid in truth_set),
                     # "detected": int(nid in detected_set),
                     "detected": int(nid in suspicious),
-
                 }
             )
 

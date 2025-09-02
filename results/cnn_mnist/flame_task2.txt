@@ -1,0 +1,513 @@
+python flsim/run_experiment_flame.py --config configs/exp_flame.yaml --model cnn_mnist --mal-behavior signflip
+Using: mps
+OK, elapsed: 0.002819061279296875 s 741385.5625
+load yaml path: configs/exp_flame.yaml
+[Info] Malicious nodes: [1, 7, 8, 11, 12, 17] (behavior=signflip, ratio=0.3)
+[Eval] Base global (round 0): acc=0.0949, loss=2.3008
+=== Per-client test acc ===
+0.9577
+Evaluated client 0: acc=0.9577, loss=0.1527 0.9965353756382203 0.9577
+0.8335
+Evaluated client 1: acc=0.2427, loss=2.0725 0.98285129255183 0.8335
+0.6154
+Evaluated client 2: acc=0.6154, loss=1.9650 0.9743589743589743 0.6154
+0.7496
+Evaluated client 3: acc=0.7496, loss=1.2456 0.9820397690827454 0.7496
+0.7503
+Evaluated client 4: acc=0.7503, loss=1.3253 0.9876386687797147 0.7503
+0.8017
+Evaluated client 5: acc=0.8017, loss=1.1828 0.9916461916461916 0.8017
+0.5587
+Evaluated client 6: acc=0.5587, loss=2.6054 0.7538998835855646 0.5587
+0.739
+Evaluated client 7: acc=0.3419, loss=2.0955 0.9247448979591837 0.739
+0.8364
+Evaluated client 8: acc=0.2081, loss=2.0849 0.9873150105708245 0.8364
+0.7259
+Evaluated client 9: acc=0.7259, loss=0.9552 0.9474053295932678 0.7259
+0.8613
+Evaluated client 10: acc=0.8613, loss=0.4725 0.9900646950092421 0.8613
+0.6487
+Evaluated client 11: acc=0.4068, loss=2.0883 0.9855144855144855 0.6487
+0.6807
+Evaluated client 12: acc=0.3420, loss=2.1644 0.9931280923584387 0.6807
+0.7505
+Evaluated client 13: acc=0.7505, loss=0.9881 0.9647446457990115 0.7505
+0.7915
+Evaluated client 14: acc=0.7915, loss=0.7340 0.9783074450990894 0.7915
+0.7921
+Evaluated client 15: acc=0.7921, loss=0.6463 0.9663716814159292 0.7921
+0.7038
+Evaluated client 16: acc=0.7038, loss=1.0081 0.9715447154471545 0.7038
+0.753
+Evaluated client 17: acc=0.4084, loss=2.1423 0.9735714285714285 0.753
+0.7974
+Evaluated client 18: acc=0.7974, loss=0.7144 0.9862938596491229 0.7974
+0.6999
+Evaluated client 19: acc=0.6999, loss=1.3341 0.9093167701863354 0.6999
+[Flame] Detected malicious clients: {0}
+Admitted client ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=19: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} | S_t=4.73398 | dists[min/med/max]=[3.36296/4.73398/18.9255] | clip=on (S_eff=4.73398) | clipped_ratio=0.474 | weighted=yes | use_noise=True | noise=2.056256679332375e-05
+[Round 1] 
+ Detected malicious: 1; Truth: 6; Committee: []
+ 
+[Eval] Global after round 1: acc=0.9136, loss=1.4351
+
+=== Per-client test acc ===
+0.948
+Evaluated client 0: acc=0.9480, loss=0.1875 0.9950765864332604 0.948
+0.6926
+Evaluated client 1: acc=0.1953, loss=2.2128 0.9508574353724085 0.6926
+0.5913
+Evaluated client 2: acc=0.5913, loss=2.2152 0.9699812382739212 0.5913
+0.759
+Evaluated client 3: acc=0.7590, loss=1.1730 0.9846055163566388 0.759
+0.6944
+Evaluated client 4: acc=0.6944, loss=1.7919 0.9638668779714739 0.6944
+0.6321
+Evaluated client 5: acc=0.6321, loss=2.1522 0.745945945945946 0.6321
+0.867
+Evaluated client 6: acc=0.8670, loss=0.4787 0.9927823050058208 0.867
+0.7835
+Evaluated client 7: acc=0.3383, loss=1.9447 0.9837372448979592 0.7835
+0.7991
+Evaluated client 8: acc=0.1580, loss=2.0165 0.9791603745092117 0.7991
+0.7227
+Evaluated client 9: acc=0.7227, loss=0.9090 0.9333800841514727 0.7227
+0.8667
+Evaluated client 10: acc=0.8667, loss=0.4223 0.9930683918669131 0.8667
+0.6629
+Evaluated client 11: acc=0.4215, loss=1.9592 0.9180819180819181 0.6629
+0.6897
+Evaluated client 12: acc=0.4118, loss=2.0597 0.9939527212754261 0.6897
+0.7919
+Evaluated client 13: acc=0.7919, loss=0.7564 0.9887973640856672 0.7919
+0.8341
+Evaluated client 14: acc=0.8341, loss=0.5921 0.9890198178896625 0.8341
+0.7313
+Evaluated client 15: acc=0.7313, loss=0.8543 0.9793510324483776 0.7313
+0.7261
+Evaluated client 16: acc=0.7261, loss=1.1979 0.9331526648599819 0.7261
+0.676
+Evaluated client 17: acc=0.2102, loss=2.1128 0.9671428571428572 0.676
+0.7941
+Evaluated client 18: acc=0.7941, loss=0.7855 0.9884868421052632 0.7941
+0.6416
+Evaluated client 19: acc=0.6416, loss=1.7303 0.929192546583851 0.6416
+[Flame] Detected malicious clients: {0}
+Admitted client ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=19: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} | S_t=13.0362 | dists[min/med/max]=[12.5228/13.0362/13.5026] | clip=on (S_eff=13.0362) | clipped_ratio=0.474 | weighted=yes | use_noise=True | noise=5.662400115928321e-05
+[Round 2] 
+ Detected malicious: 1; Truth: 6; Committee: []
+ 
+[Eval] Global after round 2: acc=0.5393, loss=2.1827
+
+=== Per-client test acc ===
+0.9421
+Evaluated client 0: acc=0.9421, loss=0.2020 0.9894237782640408 0.9421
+0.5335
+Evaluated client 1: acc=0.0982, loss=24.8211 0.8523163552597901 0.5335
+0.6553
+Evaluated client 2: acc=0.6553, loss=1.9379 0.975609756097561 0.6553
+0.769
+Evaluated client 3: acc=0.7690, loss=1.2031 0.9897370109044259 0.769
+0.7069
+Evaluated client 4: acc=0.7069, loss=1.3126 0.9118858954041205 0.7069
+0.7485
+Evaluated client 5: acc=0.7485, loss=1.4858 0.9761670761670762 0.7485
+0.7722
+Evaluated client 6: acc=0.7722, loss=0.9712 0.9741559953434226 0.7722
+0.7678
+Evaluated client 7: acc=0.2260, loss=1.9385 0.9846938775510204 0.7678
+0.8411
+Evaluated client 8: acc=0.1046, loss=2.0652 0.9903352461491997 0.8411
+0.624
+Evaluated client 9: acc=0.6240, loss=1.2723 0.8288920056100981 0.624
+0.8648
+Evaluated client 10: acc=0.8648, loss=0.4488 0.9930683918669131 0.8648
+0.5832
+Evaluated client 11: acc=0.4152, loss=2.0685 0.8641358641358642 0.5832
+0.673
+Evaluated client 12: acc=0.3350, loss=2.1172 0.9832325453545905 0.673
+0.6482
+Evaluated client 13: acc=0.6482, loss=1.4668 0.8711696869851729 0.6482
+0.8154
+Evaluated client 14: acc=0.8154, loss=0.6763 0.9855382967327263 0.8154
+0.7487
+Evaluated client 15: acc=0.7487, loss=0.8119 0.9734513274336283 0.7487
+0.6924
+Evaluated client 16: acc=0.6924, loss=1.4096 0.969286359530262 0.6924
+0.6885
+Evaluated client 17: acc=0.3248, loss=2.0672 0.9314285714285714 0.6885
+0.8223
+Evaluated client 18: acc=0.8223, loss=0.5971 0.9851973684210527 0.8223
+0.5471
+Evaluated client 19: acc=0.5471, loss=2.3306 0.7776397515527951 0.5471
+flagged #:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: True, 8: True, 9: False, 10: False, 11: True, 12: True, 13: False, 14: False, 15: False, 16: False, 17: True, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 7, 8, 11, 12, 17}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19]
+[FLAME DEBUG] | num_clients=14: {0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19} | S_t=10.9881 | dists[min/med/max]=[10.4074/10.9881/11.9244] | clip=on (S_eff=10.9881) | clipped_ratio=0.500 | weighted=yes | use_noise=True | noise=4.772807809638808e-05
+[Round 3] 
+ Detected malicious: 6; Truth: 6; Committee: []
+ 
+[Eval] Global after round 3: acc=0.8954, loss=0.4166
+
+=== Per-client test acc ===
+0.9203
+Evaluated client 0: acc=0.9203, loss=0.2929 0.986870897155361 0.9203
+0.8494
+Evaluated client 1: acc=0.1027, loss=2.6058 0.9879703097005375 0.8494
+0.585
+Evaluated client 2: acc=0.5850, loss=2.0311 0.9724828017510945 0.585
+0.7676
+Evaluated client 3: acc=0.7676, loss=1.2282 0.9900577293136626 0.7676
+0.7646
+Evaluated client 4: acc=0.7646, loss=1.2163 0.9879556259904912 0.7646
+0.7801
+Evaluated client 5: acc=0.7801, loss=1.2319 0.990909090909091 0.7801
+0.8393
+Evaluated client 6: acc=0.8393, loss=0.5804 0.9876600698486613 0.8393
+0.7653
+Evaluated client 7: acc=0.3323, loss=2.0028 0.9869260204081632 0.7653
+0.842
+Evaluated client 8: acc=0.2921, loss=1.9615 0.9797644216248867 0.842
+0.7034
+Evaluated client 9: acc=0.7034, loss=1.0869 0.9670406732117812 0.7034
+0.8134
+Evaluated client 10: acc=0.8134, loss=0.6394 0.9246765249537893 0.8134
+0.6654
+Evaluated client 11: acc=0.3494, loss=2.0807 0.9765234765234765 0.6654
+0.6375
+Evaluated client 12: acc=0.3476, loss=2.1447 0.9879054425508521 0.6375
+0.7895
+Evaluated client 13: acc=0.7895, loss=0.7336 0.9878088962108732 0.7895
+0.8189
+Evaluated client 14: acc=0.8189, loss=0.6757 0.9713444027852169 0.8189
+0.7153
+Evaluated client 15: acc=0.7153, loss=0.9832 0.9734513274336283 0.7153
+0.6973
+Evaluated client 16: acc=0.6973, loss=1.3313 0.9728997289972899 0.6973
+0.5861
+Evaluated client 17: acc=0.4412, loss=2.0423 0.9578571428571429 0.5861
+0.8134
+Evaluated client 18: acc=0.8134, loss=0.6988 0.9871162280701754 0.8134
+0.6743
+Evaluated client 19: acc=0.6743, loss=1.3278 0.924223602484472 0.6743
+flagged #:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: True, 8: True, 9: False, 10: False, 11: True, 12: True, 13: False, 14: False, 15: False, 16: False, 17: True, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 7, 8, 11, 12, 17}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19]
+[FLAME DEBUG] | num_clients=14: {0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19} | S_t=14.1561 | dists[min/med/max]=[13.714/14.1561/14.8089] | clip=on (S_eff=14.1561) | clipped_ratio=0.500 | weighted=yes | use_noise=True | noise=6.148871552457723e-05
+[Round 4] 
+ Detected malicious: 6; Truth: 6; Committee: []
+ 
+[Eval] Global after round 4: acc=0.9349, loss=0.2368
+
+=== Per-client test acc ===
+0.9399
+Evaluated client 0: acc=0.9399, loss=0.1933 0.9907002188183808 0.9399
+0.7925
+Evaluated client 1: acc=0.1540, loss=2.0525 0.98285129255183 0.7925
+0.5605
+Evaluated client 2: acc=0.5605, loss=1.8705 0.9662288930581614 0.5605
+0.7464
+Evaluated client 3: acc=0.7464, loss=1.2706 0.9788325849903784 0.7464
+0.749
+Evaluated client 4: acc=0.7490, loss=1.3486 0.9832012678288431 0.749
+0.7931
+Evaluated client 5: acc=0.7931, loss=1.1407 0.9916461916461916 0.7931
+0.795
+Evaluated client 6: acc=0.7950, loss=0.7467 0.9473806752037253 0.795
+0.7656
+Evaluated client 7: acc=0.1479, loss=2.1196 0.9882015306122449 0.7656
+0.8607
+Evaluated client 8: acc=0.1847, loss=2.0550 0.987012987012987 0.8607
+0.6798
+Evaluated client 9: acc=0.6798, loss=1.1016 0.9298737727910238 0.6798
+0.8938
+Evaluated client 10: acc=0.8938, loss=0.3362 0.9946857670979667 0.8938
+0.6812
+Evaluated client 11: acc=0.2418, loss=2.1597 0.987012987012987 0.6812
+0.7308
+Evaluated client 12: acc=0.1229, loss=2.2269 0.9925783397471138 0.7308
+0.7173
+Evaluated client 13: acc=0.7173, loss=1.1150 0.9657331136738057 0.7173
+0.7673
+Evaluated client 14: acc=0.7673, loss=0.9076 0.9775040171397965 0.7673
+0.719
+Evaluated client 15: acc=0.7190, loss=0.8828 0.9734513274336283 0.719
+0.6867
+Evaluated client 16: acc=0.6867, loss=1.3814 0.9643179765130985 0.6867
+0.6542
+Evaluated client 17: acc=0.4302, loss=2.1404 0.9192857142857143 0.6542
+0.7332
+Evaluated client 18: acc=0.7332, loss=0.8859 0.971765350877193 0.7332
+0.6708
+Evaluated client 19: acc=0.6708, loss=1.6076 0.9527950310559006 0.6708
+flagged #:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: True, 8: True, 9: False, 10: False, 11: True, 12: True, 13: False, 14: False, 15: False, 16: False, 17: True, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 7, 8, 11, 12, 17}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19]
+[FLAME DEBUG] | num_clients=14: {0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19} | S_t=14.2735 | dists[min/med/max]=[13.8231/14.2735/14.9227] | clip=on (S_eff=14.2735) | clipped_ratio=0.500 | weighted=yes | use_noise=True | noise=6.199861911978663e-05
+[Round 5] 
+ Detected malicious: 6; Truth: 6; Committee: []
+ 
+[Eval] Global after round 5: acc=0.9021, loss=0.3541
+
+=== Per-client test acc ===
+0.9546
+Evaluated client 0: acc=0.9546, loss=0.1611 0.9970824215900802 0.9546
+0.8131
+Evaluated client 1: acc=0.3679, loss=1.9498 0.9838750959815715 0.8131
+0.5899
+Evaluated client 2: acc=0.5899, loss=1.9728 0.9718574108818011 0.5899
+0.7617
+Evaluated client 3: acc=0.7617, loss=1.1100 0.9910198845413727 0.7617
+0.7741
+Evaluated client 4: acc=0.7741, loss=1.1434 0.9740095087163233 0.7741
+0.8124
+Evaluated client 5: acc=0.8124, loss=1.2612 0.9687960687960688 0.8124
+0.8458
+Evaluated client 6: acc=0.8458, loss=0.5645 0.9948777648428405 0.8458
+0.7822
+Evaluated client 7: acc=0.5008, loss=1.9078 0.9885204081632653 0.7822
+0.8754
+Evaluated client 8: acc=0.3888, loss=1.8557 0.9930534581697372 0.8754
+0.703
+Evaluated client 9: acc=0.7030, loss=0.9471 0.7489481065918654 0.703
+0.871
+Evaluated client 10: acc=0.8710, loss=0.3947 0.9937615526802218 0.871
+0.5877
+Evaluated client 11: acc=0.3816, loss=2.0756 0.9125874125874126 0.5877
+0.6994
+Evaluated client 12: acc=0.3968, loss=2.1474 0.994502473886751 0.6994
+0.7779
+Evaluated client 13: acc=0.7779, loss=0.7913 0.9887973640856672 0.7779
+0.7948
+Evaluated client 14: acc=0.7948, loss=0.7963 0.9908944831280129 0.7948
+0.7132
+Evaluated client 15: acc=0.7132, loss=0.8719 0.9716814159292035 0.7132
+0.6713
+Evaluated client 16: acc=0.6713, loss=1.4638 0.9629629629629629 0.6713
+0.6528
+Evaluated client 17: acc=0.4666, loss=2.0840 0.97 0.6528
+0.8131
+Evaluated client 18: acc=0.8131, loss=0.7199 0.9906798245614035 0.8131
+0.7106
+Evaluated client 19: acc=0.7106, loss=1.5899 0.9527950310559006 0.7106
+[Flame] Detected malicious clients: {0}
+Admitted client ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=19: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} | S_t=14.2736 | dists[min/med/max]=[13.8653/14.2736/14.6669] | clip=on (S_eff=14.2736) | clipped_ratio=0.474 | weighted=yes | use_noise=True | noise=6.19989480102615e-05
+[Round 6] 
+ Detected malicious: 1; Truth: 6; Committee: []
+ 
+[Eval] Global after round 6: acc=0.6735, loss=2.1611
+
+=== Per-client test acc ===
+0.9507
+Evaluated client 0: acc=0.9507, loss=0.1672 0.9972647702407003 0.9507
+0.7833
+Evaluated client 1: acc=0.1862, loss=2.3340 0.9715894548246736 0.7833
+0.5877
+Evaluated client 2: acc=0.5877, loss=1.6702 0.8855534709193246 0.5877
+0.7027
+Evaluated client 3: acc=0.7027, loss=1.6402 0.9454778704297627 0.7027
+0.736
+Evaluated client 4: acc=0.7360, loss=1.4121 0.986053882725832 0.736
+0.7902
+Evaluated client 5: acc=0.7902, loss=1.1605 0.956019656019656 0.7902
+0.8374
+Evaluated client 6: acc=0.8374, loss=0.5292 0.9878928987194412 0.8374
+0.7501
+Evaluated client 7: acc=0.2047, loss=2.0920 0.9872448979591837 0.7501
+0.7966
+Evaluated client 8: acc=0.2089, loss=1.9934 0.972213832678949 0.7966
+0.7337
+Evaluated client 9: acc=0.7337, loss=0.8510 0.9600280504908836 0.7337
+0.8732
+Evaluated client 10: acc=0.8732, loss=0.3988 0.9965341959334566 0.8732
+0.6621
+Evaluated client 11: acc=0.3566, loss=2.1107 0.9895104895104895 0.6621
+0.6722
+Evaluated client 12: acc=0.4551, loss=1.9843 0.9912039582188016 0.6722
+0.807
+Evaluated client 13: acc=0.8070, loss=0.6459 0.9650741350906096 0.807
+0.8118
+Evaluated client 14: acc=0.8118, loss=0.6614 0.9908944831280129 0.8118
+0.724
+Evaluated client 15: acc=0.7240, loss=0.8582 0.9740412979351032 0.724
+0.6934
+Evaluated client 16: acc=0.6934, loss=1.4476 0.9787714543812105 0.6934
+0.5711
+Evaluated client 17: acc=0.3130, loss=2.1628 0.9564285714285714 0.5711
+0.7895
+Evaluated client 18: acc=0.7895, loss=0.8394 0.9849232456140351 0.7895
+0.7009
+Evaluated client 19: acc=0.7009, loss=1.3492 0.9366459627329192 0.7009
+flagged #:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: True, 8: True, 9: False, 10: False, 11: True, 12: True, 13: False, 14: False, 15: False, 16: False, 17: True, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 7, 8, 11, 12, 17}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19]
+[FLAME DEBUG] | num_clients=14: {0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19} | S_t=10.9378 | dists[min/med/max]=[10.3894/10.9378/11.8864] | clip=on (S_eff=10.9378) | clipped_ratio=0.500 | weighted=yes | use_noise=True | noise=4.750948320994816e-05
+[Round 7] 
+ Detected malicious: 6; Truth: 6; Committee: []
+ 
+[Eval] Global after round 7: acc=0.8924, loss=0.4613
+
+=== Per-client test acc ===
+0.9562
+Evaluated client 0: acc=0.9562, loss=0.1582 0.9976294675419402 0.9562
+0.8032
+Evaluated client 1: acc=0.1902, loss=2.0188 0.9882262605579729 0.8032
+0.5871
+Evaluated client 2: acc=0.5871, loss=2.3000 0.9768605378361476 0.5871
+0.7563
+Evaluated client 3: acc=0.7563, loss=1.3142 0.9878127004490058 0.7563
+0.754
+Evaluated client 4: acc=0.7540, loss=1.2999 0.9765451664025356 0.754
+0.7737
+Evaluated client 5: acc=0.7737, loss=1.2634 0.9904176904176905 0.7737
+0.6981
+Evaluated client 6: acc=0.6981, loss=1.5154 0.34365541327124566 0.6981
+0.7837
+Evaluated client 7: acc=0.1257, loss=2.1119 0.9875637755102041 0.7837
+0.8707
+Evaluated client 8: acc=0.1191, loss=2.0441 0.9963757173059499 0.8707
+0.7195
+Evaluated client 9: acc=0.7195, loss=1.0005 0.9502103786816269 0.7195
+0.9004
+Evaluated client 10: acc=0.9004, loss=0.3183 0.9965341959334566 0.9004
+0.6769
+Evaluated client 11: acc=0.3577, loss=2.0398 0.9895104895104895 0.6769
+0.6822
+Evaluated client 12: acc=0.4905, loss=1.9778 0.9920285871357889 0.6822
+0.7531
+Evaluated client 13: acc=0.7531, loss=1.0762 0.9242174629324547 0.7531
+0.799
+Evaluated client 14: acc=0.7990, loss=0.7405 0.9833958221746116 0.799
+0.7378
+Evaluated client 15: acc=0.7378, loss=0.8525 0.9805309734513274 0.7378
+0.7383
+Evaluated client 16: acc=0.7383, loss=1.1060 0.9652213188798555 0.7383
+0.6926
+Evaluated client 17: acc=0.2919, loss=2.1559 0.9357142857142857 0.6926
+0.7986
+Evaluated client 18: acc=0.7986, loss=0.7730 0.987390350877193 0.7986
+0.719
+Evaluated client 19: acc=0.7190, loss=1.3819 0.9565217391304348 0.719
+[Flame] Detected malicious clients: {0}
+Admitted client ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=19: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} | S_t=14.1214 | dists[min/med/max]=[13.6578/14.1214/14.5697] | clip=on (S_eff=14.1214) | clipped_ratio=0.474 | weighted=yes | use_noise=True | noise=6.133789395862816e-05
+[Round 8] 
+ Detected malicious: 1; Truth: 6; Committee: []
+ 
+[Eval] Global after round 8: acc=0.6756, loss=2.1732
+
+=== Per-client test acc ===
+0.9471
+Evaluated client 0: acc=0.9471, loss=0.1841 0.9965353756382203 0.9471
+0.7986
+Evaluated client 1: acc=0.1032, loss=2.3034 0.9754287176862042 0.7986
+0.6234
+Evaluated client 2: acc=0.6234, loss=1.8946 0.967479674796748 0.6234
+0.7707
+Evaluated client 3: acc=0.7707, loss=1.2740 0.9923027581783195 0.7707
+0.7579
+Evaluated client 4: acc=0.7579, loss=1.3402 0.9857369255150554 0.7579
+0.7712
+Evaluated client 5: acc=0.7712, loss=1.4053 0.9923832923832924 0.7712
+0.8554
+Evaluated client 6: acc=0.8554, loss=0.5415 0.9899883585564611 0.8554
+0.7716
+Evaluated client 7: acc=0.2053, loss=2.0102 0.9901147959183674 0.7716
+0.8506
+Evaluated client 8: acc=0.1213, loss=2.0244 0.9930534581697372 0.8506
+0.7884
+Evaluated client 9: acc=0.7884, loss=0.6684 0.9635343618513323 0.7884
+0.8885
+Evaluated client 10: acc=0.8885, loss=0.3609 0.9951478743068392 0.8885
+0.6919
+Evaluated client 11: acc=0.1794, loss=2.1037 0.993006993006993 0.6919
+0.6752
+Evaluated client 12: acc=0.2271, loss=2.0580 0.9958768554150632 0.6752
+0.786
+Evaluated client 13: acc=0.7860, loss=0.8319 0.9818780889621087 0.786
+0.8274
+Evaluated client 14: acc=0.8274, loss=0.5993 0.986073915372255 0.8274
+0.7321
+Evaluated client 15: acc=0.7321, loss=0.8948 0.9781710914454277 0.7321
+0.7059
+Evaluated client 16: acc=0.7059, loss=1.4404 0.969286359530262 0.7059
+0.6337
+Evaluated client 17: acc=0.3347, loss=2.0500 0.9628571428571429 0.6337
+0.7743
+Evaluated client 18: acc=0.7743, loss=0.8011 0.9865679824561403 0.7743
+0.6786
+Evaluated client 19: acc=0.6786, loss=1.3746 0.9515527950310559 0.6786
+flagged #:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: True, 8: True, 9: False, 10: False, 11: True, 12: True, 13: False, 14: False, 15: False, 16: False, 17: True, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 7, 8, 11, 12, 17}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19]
+[FLAME DEBUG] | num_clients=14: {0, 2, 3, 4, 5, 6, 9, 10, 13, 14, 15, 16, 18, 19} | S_t=11.0255 | dists[min/med/max]=[10.4719/11.0255/11.88] | clip=on (S_eff=11.0255) | clipped_ratio=0.500 | weighted=yes | use_noise=True | noise=4.7890387092081774e-05
+[Round 9] 
+ Detected malicious: 6; Truth: 6; Committee: []
+ 
+[Eval] Global after round 9: acc=0.9177, loss=0.3084
+
+=== Per-client test acc ===
+0.9542
+Evaluated client 0: acc=0.9542, loss=0.1638 0.9983588621444202 0.9542
+0.4947
+Evaluated client 1: acc=0.2135, loss=2.2584 0.5134374200153571 0.4947
+0.6463
+Evaluated client 2: acc=0.6463, loss=1.8243 0.9806128830519074 0.6463
+0.7482
+Evaluated client 3: acc=0.7482, loss=1.1563 0.9756254008980115 0.7482
+0.7456
+Evaluated client 4: acc=0.7456, loss=1.4908 0.9870047543581616 0.7456
+0.7558
+Evaluated client 5: acc=0.7558, loss=1.2965 0.9766584766584766 0.7558
+0.8382
+Evaluated client 6: acc=0.8382, loss=0.5681 0.9909196740395809 0.8382
+0.762
+Evaluated client 7: acc=0.2888, loss=1.9753 0.9888392857142857 0.762
+0.8663
+Evaluated client 8: acc=0.2165, loss=2.0567 0.9936575052854123 0.8663
+0.7601
+Evaluated client 9: acc=0.7601, loss=0.7890 0.9698457223001402 0.7601
+0.9174
+Evaluated client 10: acc=0.9174, loss=0.2731 0.9928373382624769 0.9174
+0.5462
+Evaluated client 11: acc=0.2776, loss=1.9717 0.9285714285714286 0.5462
+0.7066
+Evaluated client 12: acc=0.3879, loss=2.1473 0.9947773501924134 0.7066
+0.7796
+Evaluated client 13: acc=0.7796, loss=0.8210 0.9907742998352553 0.7796
+0.7869
+Evaluated client 14: acc=0.7869, loss=0.8462 0.9892876272094269 0.7869
+0.6786
+Evaluated client 15: acc=0.6786, loss=1.0457 0.9728613569321534 0.6786
+0.721
+Evaluated client 16: acc=0.7210, loss=1.2145 0.9751580849141824 0.721
+0.5599
+Evaluated client 17: acc=0.4326, loss=2.0666 0.9578571428571429 0.5599
+0.769
+Evaluated client 18: acc=0.7690, loss=0.8034 0.9871162280701754 0.769
+0.6994
+Evaluated client 19: acc=0.6994, loss=1.6101 0.9478260869565217 0.6994
+[Flame] Detected malicious clients: {0}
+Admitted client ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=19: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} | S_t=14.2003 | dists[min/med/max]=[13.766/14.2003/14.5963] | clip=on (S_eff=14.2003) | clipped_ratio=0.474 | weighted=yes | use_noise=True | noise=6.168059557226655e-05
+[Round 10] 
+ Detected malicious: 1; Truth: 6; Committee: []
+ 
+[Eval] Global after round 10: acc=0.6478, loss=2.1874
+
+Detection over rounds:
+  Precision: 0.500 ± 0.500
+  Recall:    0.500 ± 0.500
+  TP:        3.000 ± 3.000
+  FP:        0.500 ± 0.500
+  FN:        3.000 ± 3.000
+Balances - benign total: 0.0000 (mean 0.0000 ± 0.0000), malicious total: 0.0000 (mean 0.0000 ± 0.0000)
+Benign fairness: 0.0000, Malicious fairness: 0.0000
+Benign Gini: 0.0000, Malicious Gini: 0.0000
+Jain's Fairness: 0.0000
+Gini Coefficient: 0.0000
+

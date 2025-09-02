@@ -8,6 +8,8 @@ import csv
 import os
 import sys
 
+random.seed(42)
+np.random.seed(42)
 # When executed as a script (``python flsim/run_experiment_ours.py``) the
 # package-relative imports fail because ``__package__`` is empty. Adjust the
 # path in that case so the module can still resolve ``flsim.run_experiment``.
@@ -185,7 +187,7 @@ def main():
         "is_malicious",
         "detected",
     ]
-    log_file = open("./results/fl_log_ours.csv", "w", newline="")
+    log_file = open(f"./results/fl_log_flame_{args.mal_behavior}_{args.dataset}_{args.model}.csv", "w", newline="")
     writer = csv.DictWriter(log_file, fieldnames=log_fields)
     writer.writeheader()
 

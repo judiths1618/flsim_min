@@ -180,14 +180,20 @@ def main():
     log_fields = [
         "round",
         "node_id",
+        "stake",
+        "reputation",
         "train_acc",
         "train_loss",
         "val_acc",
         "val_loss",
+        "reward",
+        "stake_penalty",
+        "rep_penalty",
+        "is_committee",
         "is_malicious",
         "detected",
     ]
-    log_file = open(f"./results/fl_log_base_{args.mal_behavior}_{args.dataset}_{args.model}.csv", "w", newline="")
+    log_file = open(f"./results/fl_log_flame_incentives_{args.mal_behavior}_{args.dataset}_{args.model}.csv", "w", newline="")
     writer = csv.DictWriter(log_file, fieldnames=log_fields)
     writer.writeheader()
 
@@ -271,7 +277,7 @@ def main():
         print("=== Per-client test acc ===")
         for u in updates:
             m = evaluate_global_params(args.model, u.params, X_eval, y_eval)
-            print(float(u.metrics.get("val_acc")))
+            # print(float(u.metrics.get("val_acc")))
             eval_accs.append(m["acc"])
             eval_losses.append(m["loss"])
             node_ids.append(u.node_id)
@@ -283,7 +289,7 @@ def main():
                 "val_acc":float(u.metrics.get("val_acc"))
             }
             score_map[u.node_id] = float(m["acc"])
-            print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"), u.metrics.get("val_acc"))
+            # print(f"Evaluated client {u.node_id}: acc={m['acc']:.4f}, loss={m['loss']:.4f}",u.metrics.get("acc"), u.metrics.get("val_acc"))
                 
         # We pass the updates into the contract per its interface.
         for u in updates:
@@ -296,13 +302,13 @@ def main():
         # suspicious={}
         
         # 3. Additional detection via FLAME detector
-        # flame_detector = FlameDetector()
-        # flame_flags = flame_detector.detect(features_map, score_map)
+        flame_detector = FlameDetector()
+        flame_flags = flame_detector.detect(features_map, score_map)
         suspicious: set[int] = set()
-        # flame_malicious = {nid for nid, flag in flame_flags.items() if flag}
-        # if flame_malicious:
-        #     print("[Flame] Detected malicious clients:", flame_malicious)
-        #     suspicious = flame_malicious
+        flame_malicious = {nid for nid, flag in flame_flags.items() if flag}
+        if flame_malicious:
+            print("[Flame] Detected malicious clients:", flame_malicious)
+            suspicious = flame_malicious
 
 
         # Note: Contract will call aggregation which expects absolute params.
@@ -325,20 +331,36 @@ def main():
         # print(f"Round {r} result:", result)
 
         plans = result.get("plans", {})
+        rewards_map = plans.get("credit_rewards", {})
+        penalties_map = plans.get("apply_penalties", {})
+        committee_set = set(result.get("committee", []))
+        # detected_set = set(result.get("detected", []))
         truth_set = set(result.get("truth", []))
 
         for nid, state in result["node_states"].items():
             train_m = train_metrics_map.get(nid, {})
             eval_m = eval_metrics_map.get(nid, {})
+            pen = penalties_map.get(nid, {})
             writer.writerow(
                 {
                     "round": r,
                     "node_id": nid,
+                    "stake": state["stake"],
+                    "reputation": state["reputation"],
                     "train_acc": train_m.get("acc", float("nan")),
                     "train_loss": train_m.get("loss", float("nan")),
                     "val_acc": eval_m.get("acc", float("nan")),
                     "val_loss": eval_m.get("loss", float("nan")),
+                    "reward": rewards_map.get(nid, 0.0),
+                    "stake_penalty": pen.get("stake_mul", 0.0)
+                    if nid in penalties_map
+                    else 0.0,
+                    "rep_penalty": pen.get("rep_mul", 0.0)
+                    if nid in penalties_map
+                    else 0.0,
+                    "is_committee": int(nid in committee_set),
                     "is_malicious": int(nid in truth_set),
+                    # "detected": int(nid in detected_set),
                     "detected": int(nid in suspicious),
                 }
             )

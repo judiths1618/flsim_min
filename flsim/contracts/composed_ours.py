@@ -60,7 +60,6 @@ class ComposedContract:
         self.nodes[node_id] = NodeState(
             node_id=node_id, stake=float(stake), reputation=float(reputation)
         )
-        self.cooldowns.setdefault(node_id, 0.0)
 
     def set_features(self, node_id: int, **feats: Any):
         out = {}
@@ -243,4 +242,5 @@ class ComposedContract:
             f"[Round {round_idx}] \n Detected malicious: {len(sorted(detected_ids))}; Truth: {len(sorted(truth_set))}; Committee: {self.select_committee(round_idx)}\n",
             f""
         )
+        print
         return out

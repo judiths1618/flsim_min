@@ -1,0 +1,498 @@
+python flsim/run_experiment_base.py --config configs/exp_base.yaml --model cnn_mnist --mal-behavior scale
+Using: mps
+OK, elapsed: 0.003952980041503906 s 741374.875
+load yaml path: configs/exp_base.yaml
+[Info] Malicious nodes: [1, 7, 8, 11, 12, 17] (behavior=scale, ratio=0.3)
+[Eval] Base global (round 0): acc=0.1211, loss=2.3018
+=== Per-client test acc ===
+0.9535
+Evaluated client 0: acc=0.9535, loss=0.1666 0.9972647702407003 0.9535
+0.8576
+Evaluated client 1: acc=0.2772, loss=19.9532 0.9797798822626056 0.8576
+0.6027
+Evaluated client 2: acc=0.6027, loss=2.0367 0.9749843652282677 0.6027
+0.7402
+Evaluated client 3: acc=0.7402, loss=1.4547 0.9794740218088518 0.7402
+0.7499
+Evaluated client 4: acc=0.7499, loss=1.2895 0.9825673534072901 0.7499
+0.8049
+Evaluated client 5: acc=0.8049, loss=1.1695 0.9960687960687961 0.8049
+0.5832
+Evaluated client 6: acc=0.5832, loss=2.8648 0.7294528521536671 0.5832
+0.7525
+Evaluated client 7: acc=0.1979, loss=22.1524 0.9451530612244898 0.7525
+0.8443
+Evaluated client 8: acc=0.1585, loss=23.2517 0.9912413168227122 0.8443
+0.7193
+Evaluated client 9: acc=0.7193, loss=0.9759 0.9509116409537167 0.7193
+0.8626
+Evaluated client 10: acc=0.8626, loss=0.4464 0.9923752310536045 0.8626
+0.6613
+Evaluated client 11: acc=0.4235, loss=15.8524 0.9875124875124875 0.6613
+0.6903
+Evaluated client 12: acc=0.2990, loss=19.3501 0.9934029686641012 0.6903
+0.766
+Evaluated client 13: acc=0.7660, loss=0.8269 0.9696869851729819 0.766
+0.7761
+Evaluated client 14: acc=0.7761, loss=0.8281 0.9804499196572041 0.7761
+0.7972
+Evaluated client 15: acc=0.7972, loss=0.6361 0.9634218289085545 0.7972
+0.7017
+Evaluated client 16: acc=0.7017, loss=1.2926 0.9769647696476965 0.7017
+0.6863
+Evaluated client 17: acc=0.3862, loss=16.9392 0.965 0.6863
+0.7828
+Evaluated client 18: acc=0.7828, loss=0.7779 0.987390350877193 0.7828
+0.6894
+Evaluated client 19: acc=0.6894, loss=1.2190 0.9204968944099379 0.6894
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 1] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 1: acc=0.5343, loss=2.8905
+
+=== Per-client test acc ===
+0.9411
+Evaluated client 0: acc=0.9411, loss=0.2117 0.9925237053245806 0.9411
+0.7972
+Evaluated client 1: acc=0.1794, loss=22.6821 0.9838750959815715 0.7972
+0.6006
+Evaluated client 2: acc=0.6006, loss=2.0825 0.975609756097561 0.6006
+0.7551
+Evaluated client 3: acc=0.7551, loss=1.3837 0.9862091084028223 0.7551
+0.7132
+Evaluated client 4: acc=0.7132, loss=1.7228 0.9689381933438985 0.7132
+0.6941
+Evaluated client 5: acc=0.6941, loss=1.7524 0.9110565110565111 0.6941
+0.8526
+Evaluated client 6: acc=0.8526, loss=0.5116 0.9899883585564611 0.8526
+0.7746
+Evaluated client 7: acc=0.3274, loss=18.5538 0.9866071428571429 0.7746
+0.7578
+Evaluated client 8: acc=0.1529, loss=23.3985 0.9549984898822108 0.7578
+0.6528
+Evaluated client 9: acc=0.6528, loss=1.1395 0.9144460028050491 0.6528
+0.8644
+Evaluated client 10: acc=0.8644, loss=0.4564 0.9930683918669131 0.8644
+0.6617
+Evaluated client 11: acc=0.4519, loss=15.1056 0.9325674325674326 0.6617
+0.7036
+Evaluated client 12: acc=0.4547, loss=15.0343 0.9928532160527762 0.7036
+0.771
+Evaluated client 13: acc=0.7710, loss=0.8711 0.9901153212520593 0.771
+0.8209
+Evaluated client 14: acc=0.8209, loss=0.6485 0.9919657204070702 0.8209
+0.7517
+Evaluated client 15: acc=0.7517, loss=0.7767 0.9828908554572271 0.7517
+0.721
+Evaluated client 16: acc=0.7210, loss=1.3607 0.9390243902439024 0.721
+0.661
+Evaluated client 17: acc=0.2621, loss=20.3589 0.9685714285714285 0.661
+0.8027
+Evaluated client 18: acc=0.8027, loss=0.7490 0.9898574561403509 0.8027
+0.659
+Evaluated client 19: acc=0.6590, loss=1.6230 0.9440993788819876 0.659
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 2] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 2: acc=0.4202, loss=4.0721
+
+=== Per-client test acc ===
+0.9508
+Evaluated client 0: acc=0.9508, loss=0.1689 0.9919766593727206 0.9508
+0.7326
+Evaluated client 1: acc=0.0982, loss=24.9196 0.9746608651138982 0.7326
+0.6133
+Evaluated client 2: acc=0.6133, loss=1.9701 0.9724828017510945 0.6133
+0.7566
+Evaluated client 3: acc=0.7566, loss=1.2984 0.9644002565747274 0.7566
+0.6993
+Evaluated client 4: acc=0.6993, loss=1.3352 0.9036450079239303 0.6993
+0.7797
+Evaluated client 5: acc=0.7797, loss=1.3070 0.9828009828009828 0.7797
+0.7665
+Evaluated client 6: acc=0.7665, loss=0.9583 0.9755529685681025 0.7665
+0.772
+Evaluated client 7: acc=0.2749, loss=20.0183 0.9878826530612245 0.772
+0.8415
+Evaluated client 8: acc=0.1974, loss=22.1742 0.9879190576864996 0.8415
+0.6463
+Evaluated client 9: acc=0.6463, loss=1.1433 0.8085553997194951 0.6463
+0.8755
+Evaluated client 10: acc=0.8755, loss=0.4053 0.9944547134935305 0.8755
+0.604
+Evaluated client 11: acc=0.4550, loss=15.0352 0.9170829170829171 0.604
+0.6655
+Evaluated client 12: acc=0.5289, loss=12.9393 0.9766355140186916 0.6655
+0.6586
+Evaluated client 13: acc=0.6586, loss=1.4213 0.8747940691927513 0.6586
+0.8201
+Evaluated client 14: acc=0.8201, loss=0.6660 0.9793786823781467 0.8201
+0.7299
+Evaluated client 15: acc=0.7299, loss=0.8695 0.9805309734513274 0.7299
+0.6929
+Evaluated client 16: acc=0.6929, loss=1.4204 0.9742547425474255 0.6929
+0.6089
+Evaluated client 17: acc=0.2987, loss=19.3806 0.9614285714285714 0.6089
+0.8219
+Evaluated client 18: acc=0.8219, loss=0.6017 0.9791666666666666 0.8219
+0.6106
+Evaluated client 19: acc=0.6106, loss=2.1944 0.8881987577639752 0.6106
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 3] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 3: acc=0.5193, loss=4.5863
+
+=== Per-client test acc ===
+0.9353
+Evaluated client 0: acc=0.9353, loss=0.2411 0.9866885485047411 0.9353
+0.8457
+Evaluated client 1: acc=0.2278, loss=21.3270 0.9864346045559252 0.8457
+0.6071
+Evaluated client 2: acc=0.6071, loss=1.9097 0.9762351469668543 0.6071
+0.7613
+Evaluated client 3: acc=0.7613, loss=1.2816 0.9929441949967928 0.7613
+0.7592
+Evaluated client 4: acc=0.7592, loss=1.2878 0.9854199683042789 0.7592
+0.785
+Evaluated client 5: acc=0.7850, loss=1.1629 0.9862407862407863 0.785
+0.8527
+Evaluated client 6: acc=0.8527, loss=0.5016 0.9871944121071012 0.8527
+0.769
+Evaluated client 7: acc=0.3744, loss=17.2378 0.9856505102040817 0.769
+0.8567
+Evaluated client 8: acc=0.2378, loss=21.0580 0.9761401389308366 0.8567
+0.7123
+Evaluated client 9: acc=0.7123, loss=1.0625 0.9635343618513323 0.7123
+0.8607
+Evaluated client 10: acc=0.8607, loss=0.4700 0.9632624768946395 0.8607
+0.6518
+Evaluated client 11: acc=0.3924, loss=16.7220 0.975024975024975 0.6518
+0.6693
+Evaluated client 12: acc=0.4234, loss=15.8525 0.9939527212754261 0.6693
+0.7959
+Evaluated client 13: acc=0.7959, loss=0.7219 0.9920922570016475 0.7959
+0.817
+Evaluated client 14: acc=0.8170, loss=0.6449 0.9850026780931976 0.817
+0.6661
+Evaluated client 15: acc=0.6661, loss=1.1642 0.9651917404129794 0.6661
+0.6996
+Evaluated client 16: acc=0.6996, loss=1.3602 0.9697380307136405 0.6996
+0.5745
+Evaluated client 17: acc=0.1039, loss=24.7540 0.9564285714285714 0.5745
+0.7979
+Evaluated client 18: acc=0.7979, loss=0.7222 0.981359649122807 0.7979
+0.6546
+Evaluated client 19: acc=0.6546, loss=1.5710 0.937888198757764 0.6546
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 4] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 4: acc=0.4139, loss=4.0275
+
+=== Per-client test acc ===
+0.9509
+Evaluated client 0: acc=0.9509, loss=0.1731 0.9947118891320205 0.9509
+0.8369
+Evaluated client 1: acc=0.5104, loss=13.5166 0.9907857691323266 0.8369
+0.5683
+Evaluated client 2: acc=0.5683, loss=1.8874 0.9549718574108818 0.5683
+0.7736
+Evaluated client 3: acc=0.7736, loss=1.0157 0.9817190506735086 0.7736
+0.7478
+Evaluated client 4: acc=0.7478, loss=1.3693 0.9911251980982567 0.7478
+0.7881
+Evaluated client 5: acc=0.7881, loss=1.1890 0.9862407862407863 0.7881
+0.8445
+Evaluated client 6: acc=0.8445, loss=0.5687 0.9927823050058208 0.8445
+0.783
+Evaluated client 7: acc=0.4284, loss=15.7444 0.9910714285714286 0.783
+0.874
+Evaluated client 8: acc=0.2172, loss=21.6143 0.9861069163394744 0.874
+0.7716
+Evaluated client 9: acc=0.7716, loss=0.7904 0.9768583450210379 0.7716
+0.9004
+Evaluated client 10: acc=0.9004, loss=0.3274 0.996996303142329 0.9004
+0.6614
+Evaluated client 11: acc=0.2758, loss=19.9838 0.9905094905094906 0.6614
+0.7505
+Evaluated client 12: acc=0.3559, loss=17.7755 0.9928532160527762 0.7505
+0.7226
+Evaluated client 13: acc=0.7226, loss=1.0390 0.9604612850082372 0.7226
+0.8088
+Evaluated client 14: acc=0.8088, loss=0.7189 0.9914301017675415 0.8088
+0.6813
+Evaluated client 15: acc=0.6813, loss=1.1343 0.9722713864306785 0.6813
+0.6833
+Evaluated client 16: acc=0.6833, loss=1.3437 0.975609756097561 0.6833
+0.6696
+Evaluated client 17: acc=0.3695, loss=17.3911 0.9328571428571428 0.6696
+0.7873
+Evaluated client 18: acc=0.7873, loss=0.8041 0.987390350877193 0.7873
+0.6939
+Evaluated client 19: acc=0.6939, loss=1.4996 0.9714285714285714 0.6939
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 5] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 5: acc=0.6124, loss=1.9858
+
+=== Per-client test acc ===
+0.954
+Evaluated client 0: acc=0.9540, loss=0.1604 0.9952589350838804 0.954
+0.8143
+Evaluated client 1: acc=0.3928, loss=16.7439 0.980035833120041 0.8143
+0.5985
+Evaluated client 2: acc=0.5985, loss=2.0693 0.9749843652282677 0.5985
+0.7496
+Evaluated client 3: acc=0.7496, loss=1.2394 0.9910198845413727 0.7496
+0.7634
+Evaluated client 4: acc=0.7634, loss=1.4262 0.9736925515055468 0.7634
+0.8222
+Evaluated client 5: acc=0.8222, loss=1.3839 0.9690417690417691 0.8222
+0.823
+Evaluated client 6: acc=0.8230, loss=0.6531 0.9883585564610011 0.823
+0.7765
+Evaluated client 7: acc=0.3623, loss=17.5845 0.9811862244897959 0.7765
+0.8671
+Evaluated client 8: acc=0.1831, loss=22.5576 0.9912413168227122 0.8671
+0.7295
+Evaluated client 9: acc=0.7295, loss=1.0859 0.9039270687237027 0.7295
+0.8654
+Evaluated client 10: acc=0.8654, loss=0.4268 0.9923752310536045 0.8654
+0.6129
+Evaluated client 11: acc=0.3901, loss=16.8064 0.939060939060939 0.6129
+0.6975
+Evaluated client 12: acc=0.4005, loss=16.5330 0.9958768554150632 0.6975
+0.7767
+Evaluated client 13: acc=0.7767, loss=0.8159 0.9887973640856672 0.7767
+0.7948
+Evaluated client 14: acc=0.7948, loss=0.7843 0.9908944831280129 0.7948
+0.722
+Evaluated client 15: acc=0.7220, loss=0.8234 0.9651917404129794 0.722
+0.643
+Evaluated client 16: acc=0.6430, loss=1.6931 0.9566395663956639 0.643
+0.6554
+Evaluated client 17: acc=0.2473, loss=20.7767 0.965 0.6554
+0.7956
+Evaluated client 18: acc=0.7956, loss=0.8223 0.9879385964912281 0.7956
+0.6809
+Evaluated client 19: acc=0.6809, loss=1.6651 0.9503105590062112 0.6809
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 6] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 6: acc=0.5429, loss=3.0458
+
+=== Per-client test acc ===
+0.9577
+Evaluated client 0: acc=0.9577, loss=0.1572 0.9978118161925602 0.9577
+0.7658
+Evaluated client 1: acc=0.1308, loss=24.0172 0.9697977988226261 0.7658
+0.55
+Evaluated client 2: acc=0.5500, loss=1.5897 0.9093183239524703 0.55
+0.7273
+Evaluated client 3: acc=0.7273, loss=1.4078 0.9576651699807569 0.7273
+0.7354
+Evaluated client 4: acc=0.7354, loss=1.4097 0.9857369255150554 0.7354
+0.784
+Evaluated client 5: acc=0.7840, loss=1.1893 0.9508599508599509 0.784
+0.859
+Evaluated client 6: acc=0.8590, loss=0.4781 0.9913853317811409 0.859
+0.7481
+Evaluated client 7: acc=0.1240, loss=24.1951 0.9837372448979592 0.7481
+0.8043
+Evaluated client 8: acc=0.2329, loss=21.1908 0.9691935971005738 0.8043
+0.7341
+Evaluated client 9: acc=0.7341, loss=0.8624 0.9403927068723703 0.7341
+0.8767
+Evaluated client 10: acc=0.8767, loss=0.4095 0.9956099815157117 0.8767
+0.6642
+Evaluated client 11: acc=0.3175, loss=18.8186 0.988011988011988 0.6642
+0.6736
+Evaluated client 12: acc=0.3184, loss=18.7741 0.9920285871357889 0.6736
+0.8078
+Evaluated client 13: acc=0.8078, loss=0.6015 0.956177924217463 0.8078
+0.8219
+Evaluated client 14: acc=0.8219, loss=0.6046 0.9892876272094269 0.8219
+0.7299
+Evaluated client 15: acc=0.7299, loss=0.8501 0.9746312684365782 0.7299
+0.6913
+Evaluated client 16: acc=0.6913, loss=1.4161 0.976513098464318 0.6913
+0.4767
+Evaluated client 17: acc=0.4616, loss=14.8554 0.9192857142857143 0.4767
+0.7921
+Evaluated client 18: acc=0.7921, loss=0.7853 0.9862938596491229 0.7921
+0.6798
+Evaluated client 19: acc=0.6798, loss=1.5271 0.9403726708074535 0.6798
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 7] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 7: acc=0.3847, loss=4.4782
+
+=== Per-client test acc ===
+0.9389
+Evaluated client 0: acc=0.9389, loss=0.2255 0.9943471918307805 0.9389
+0.8156
+Evaluated client 1: acc=0.2603, loss=20.4309 0.9900179165600205 0.8156
+0.5603
+Evaluated client 2: acc=0.5603, loss=2.3187 0.9693558474046279 0.5603
+0.7674
+Evaluated client 3: acc=0.7674, loss=1.1072 0.9926234765875561 0.7674
+0.7591
+Evaluated client 4: acc=0.7591, loss=1.2407 0.9787638668779715 0.7591
+0.7701
+Evaluated client 5: acc=0.7701, loss=1.4451 0.9894348894348894 0.7701
+0.7813
+Evaluated client 6: acc=0.7813, loss=0.7585 0.5764842840512223 0.7813
+0.789
+Evaluated client 7: acc=0.2120, loss=21.7476 0.9866071428571429 0.789
+0.8567
+Evaluated client 8: acc=0.2594, loss=20.4329 0.9894291754756871 0.8567
+0.7808
+Evaluated client 9: acc=0.7808, loss=0.7859 0.9628330995792427 0.7808
+0.8929
+Evaluated client 10: acc=0.8929, loss=0.3432 0.9942236598890942 0.8929
+0.6765
+Evaluated client 11: acc=0.3936, loss=16.6538 0.991008991008991 0.6765
+0.6991
+Evaluated client 12: acc=0.2376, loss=20.9837 0.9953271028037384 0.6991
+0.7634
+Evaluated client 13: acc=0.7634, loss=0.9547 0.9301482701812192 0.7634
+0.7946
+Evaluated client 14: acc=0.7946, loss=0.7706 0.9884841992501339 0.7946
+0.7309
+Evaluated client 15: acc=0.7309, loss=0.8400 0.9811209439528024 0.7309
+0.7075
+Evaluated client 16: acc=0.7075, loss=1.2714 0.973803071364047 0.7075
+0.6759
+Evaluated client 17: acc=0.3700, loss=17.2943 0.8971428571428571 0.6759
+0.7861
+Evaluated client 18: acc=0.7861, loss=0.8239 0.9893092105263158 0.7861
+0.7291
+Evaluated client 19: acc=0.7291, loss=1.3373 0.9577639751552796 0.7291
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 8] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 8: acc=0.4731, loss=2.0653
+
+=== Per-client test acc ===
+0.9446
+Evaluated client 0: acc=0.9446, loss=0.1931 0.9936177972283005 0.9446
+0.7906
+Evaluated client 1: acc=0.2326, loss=21.1915 0.9777322754031226 0.7906
+0.6185
+Evaluated client 2: acc=0.6185, loss=1.8195 0.9649781113195748 0.6185
+0.7521
+Evaluated client 3: acc=0.7521, loss=1.2583 0.9801154586273252 0.7521
+0.7531
+Evaluated client 4: acc=0.7531, loss=1.2143 0.9847860538827259 0.7531
+0.767
+Evaluated client 5: acc=0.7670, loss=1.3487 0.9877149877149877 0.767
+0.857
+Evaluated client 6: acc=0.8570, loss=0.5416 0.9916181606519209 0.857
+0.7674
+Evaluated client 7: acc=0.2796, loss=19.8840 0.9834183673469388 0.7674
+0.8558
+Evaluated client 8: acc=0.2177, loss=21.5951 0.9921473874962247 0.8558
+0.7617
+Evaluated client 9: acc=0.7617, loss=0.7241 0.9467040673211781 0.7617
+0.894
+Evaluated client 10: acc=0.8940, loss=0.3549 0.9958410351201479 0.894
+0.6903
+Evaluated client 11: acc=0.3817, loss=17.0235 0.9925074925074925 0.6903
+0.6782
+Evaluated client 12: acc=0.3839, loss=16.8977 0.9961517317207257 0.6782
+0.8077
+Evaluated client 13: acc=0.8077, loss=0.6913 0.9871499176276771 0.8077
+0.8261
+Evaluated client 14: acc=0.8261, loss=0.6094 0.985270487412962 0.8261
+0.7011
+Evaluated client 15: acc=0.7011, loss=0.9881 0.9687315634218289 0.7011
+0.7019
+Evaluated client 16: acc=0.7019, loss=1.3446 0.971996386630533 0.7019
+0.6227
+Evaluated client 17: acc=0.1837, loss=22.5439 0.9521428571428572 0.6227
+0.7604
+Evaluated client 18: acc=0.7604, loss=0.8628 0.9808114035087719 0.7604
+0.6559
+Evaluated client 19: acc=0.6559, loss=1.6914 0.929192546583851 0.6559
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 9] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 9: acc=0.6441, loss=1.2604
+
+=== Per-client test acc ===
+0.9559
+Evaluated client 0: acc=0.9559, loss=0.1563 0.9958059810357404 0.9559
+0.5675
+Evaluated client 1: acc=0.3569, loss=17.7668 0.6703352956232403 0.5675
+0.6686
+Evaluated client 2: acc=0.6686, loss=1.8210 0.9806128830519074 0.6686
+0.7577
+Evaluated client 3: acc=0.7577, loss=1.2161 0.9858883899935856 0.7577
+0.7467
+Evaluated client 4: acc=0.7467, loss=1.2927 0.989540412044374 0.7467
+0.699
+Evaluated client 5: acc=0.6990, loss=1.8910 0.9606879606879607 0.699
+0.8361
+Evaluated client 6: acc=0.8361, loss=0.5932 0.9918509895227008 0.8361
+0.7741
+Evaluated client 7: acc=0.3052, loss=19.1706 0.9869260204081632 0.7741
+0.8583
+Evaluated client 8: acc=0.3406, loss=18.1790 0.9906372697070371 0.8583
+0.7444
+Evaluated client 9: acc=0.7444, loss=0.8304 0.9656381486676017 0.7444
+0.9187
+Evaluated client 10: acc=0.9187, loss=0.2706 0.9898336414048059 0.9187
+0.528
+Evaluated client 11: acc=0.4142, loss=16.1446 0.9065934065934066 0.528
+0.7033
+Evaluated client 12: acc=0.3510, loss=17.8686 0.9947773501924134 0.7033
+0.7774
+Evaluated client 13: acc=0.7774, loss=0.8137 0.9868204283360791 0.7774
+0.8203
+Evaluated client 14: acc=0.8203, loss=0.7168 0.9919657204070702 0.8203
+0.694
+Evaluated client 15: acc=0.6940, loss=1.0302 0.9752212389380531 0.694
+0.6819
+Evaluated client 16: acc=0.6819, loss=1.3874 0.9634146341463414 0.6819
+0.5493
+Evaluated client 17: acc=0.3948, loss=16.6797 0.9507142857142857 0.5493
+0.7737
+Evaluated client 18: acc=0.7737, loss=0.7893 0.9865679824561403 0.7737
+0.6994
+Evaluated client 19: acc=0.6994, loss=1.7484 0.9453416149068323 0.6994
+Admitted client ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FedAvg] clients=20 | weights(min/med/max)=0.0134/0.0524/0.0914
+[Round 10] 
+ Detected malicious: 0; Truth: 6; Committee: []
+ 
+[Eval] Global after round 10: acc=0.4955, loss=3.1917
+
+Detection over rounds:
+  Precision: 0.000 ± 0.000
+  Recall:    0.000 ± 0.000
+  TP:        0.000 ± 0.000
+  FP:        0.000 ± 0.000
+  FN:        6.000 ± 0.000
+Balances - benign total: 0.0000 (mean 0.0000 ± 0.0000), malicious total: 0.0000 (mean 0.0000 ± 0.0000)
+Benign fairness: 0.0000, Malicious fairness: 0.0000
+Benign Gini: 0.0000, Malicious Gini: 0.0000
+Jain's Fairness: 0.0000
+Gini Coefficient: 0.0000
+
