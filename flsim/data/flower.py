@@ -8,7 +8,13 @@ try:
 except Exception:
     FederatedDataset = None  # type: ignore
 
-_LABEL_CANDIDATES = ["label", "labels", "target", "class", "y"]
+try:  # optional dependency for label-column discovery
+    from datasets import load_dataset as _load_hf_dataset
+except Exception:  # pragma: no cover - dependency may be missing
+    _load_hf_dataset = None  # type: ignore
+
+# Heuristic list of common label field names; extend as needed for specific datasets
+_LABEL_CANDIDATES = ["label", "labels", "target", "class", "y", "logS"]
 
 def _find_label_column(ds) -> str:
     cols = set(ds.column_names)
@@ -33,7 +39,22 @@ def load_flower_partitions(dataset: str, num_clients: int, *, iid: bool = True, 
         # part = IidPartitioner(num_partitions=int(num_clients), seed=seed)
         part = IidPartitioner(num_partitions=int(num_clients))
     else:
-        part = DirichletPartitioner(num_partitions=int(num_clients), partition_by="label", alpha=float(alpha), seed=seed)
+        # part = DirichletPartitioner(num_partitions=int(num_clients), partition_by="label", alpha=float(alpha), seed=seed)
+                # Attempt to infer label column for non-IID partitioning
+        part_col = "label"
+        if _load_hf_dataset is not None:
+            try:
+                ds_tmp = _load_hf_dataset(dataset, split=split)
+                part_col = _find_label_column(ds_tmp)
+            except Exception:
+                pass
+        part = DirichletPartitioner(
+            num_partitions=int(num_clients),
+            partition_by=part_col,
+            alpha=float(alpha),
+            seed=seed,
+        )
+
     fds = FederatedDataset(dataset=dataset, partitioners={split: part})
     partitions = {}
     label_col = None
@@ -142,6 +163,19 @@ def load_flower_arrays(
             cols = []
             for k in X_keys:
                 arr = np.asarray(ds[k])
+                # Some tabular datasets store feature vectors as lists, leading to
+                # ``object`` dtype arrays. Attempt to convert those to a numeric
+                # matrix before applying the dtype filter below. If conversion
+                # fails, fall back to skipping the column.
+                if arr.dtype.kind == "O":
+                    try:
+                        arr = np.array([
+                            np.asarray(row, dtype=np.float32).ravel() for row in arr
+                        ])
+                    except Exception:
+                        # Non-numeric object column (e.g. strings), skip it
+                        continue
+
                 # Skip obviously non-numeric columns
                 if arr.dtype.kind not in "iuifb":  # ints, unsigned, floats, bools
                     continue
@@ -163,9 +197,17 @@ def load_flower_arrays(
         # , seed=seed)
     else:
         # Use label column name for partitioning; if not available, defaults to "label"
+        part_col = "label"
+        if _load_hf_dataset is not None:
+            try:
+                ds_tmp = _load_hf_dataset(dataset, split=split)
+                part_col = _find_label_column(ds_tmp)
+            except Exception:
+                pass
         part_train = DirichletPartitioner(
             num_partitions=int(n_clients),
-            partition_by="label",
+            # partition_by="label",
+            partition_by=part_col,
             alpha=float(alpha),
             seed=seed,
         )
