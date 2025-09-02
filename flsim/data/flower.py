@@ -142,6 +142,19 @@ def load_flower_arrays(
             cols = []
             for k in X_keys:
                 arr = np.asarray(ds[k])
+                # Some tabular datasets store feature vectors as lists, leading to
+                # ``object`` dtype arrays. Attempt to convert those to a numeric
+                # matrix before applying the dtype filter below. If conversion
+                # fails, fall back to skipping the column.
+                if arr.dtype.kind == "O":
+                    try:
+                        arr = np.array([
+                            np.asarray(row, dtype=np.float32).ravel() for row in arr
+                        ])
+                    except Exception:
+                        # Non-numeric object column (e.g. strings), skip it
+                        continue
+
                 # Skip obviously non-numeric columns
                 if arr.dtype.kind not in "iuifb":  # ints, unsigned, floats, bools
                     continue
