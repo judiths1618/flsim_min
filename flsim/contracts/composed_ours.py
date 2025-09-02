@@ -60,6 +60,9 @@ class ComposedContract:
         self.nodes[node_id] = NodeState(
             node_id=node_id, stake=float(stake), reputation=float(reputation)
         )
+        # Track cooldown for all registered nodes to avoid KeyError during
+        # access, even if a node has not yet been selected for the committee.
+        self.cooldowns.setdefault(int(node_id), 0.0)
 
     def set_features(self, node_id: int, **feats: Any):
         out = {}
