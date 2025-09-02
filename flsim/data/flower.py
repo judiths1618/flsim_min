@@ -16,6 +16,13 @@ except Exception:  # pragma: no cover - dependency may be missing
 # Heuristic list of common label field names; extend as needed for specific datasets
 _LABEL_CANDIDATES = ["label", "labels", "target", "class", "y", "logS"]
 
+# Map shorthand dataset names to their canonical identifiers on the Hugging
+# Face hub.  This allows callers to simply request "chembl_aqsol" without
+# specifying the full owner/name pair required by ``flwr-datasets``.
+_DATASET_ALIASES = {
+    "chembl_aqsol": "jiahborcn/chembl_aqsol",
+}
+
 def _find_label_column(ds) -> str:
     cols = set(ds.column_names)
     for c in _LABEL_CANDIDATES:
@@ -33,6 +40,7 @@ def _num_classes_from_features(ds, label_col: str) -> Optional[int]:
     return None
 
 def load_flower_partitions(dataset: str, num_clients: int, *, iid: bool = True, alpha: float = 0.5, split: str = "train", seed: int = 42):
+    dataset = _DATASET_ALIASES.get(dataset, dataset)
     if FederatedDataset is None:
         raise ImportError("flwr-datasets is not installed. Run: pip install flwr-datasets datasets pillow")
     if iid:
@@ -132,6 +140,7 @@ def load_flower_arrays(
         "none": disable normalization (the `normalize` flag must also be True to enable any normalization).
       - If `max_per_client` is set, each client's data is truncated deterministically.
     """
+    dataset = _DATASET_ALIASES.get(dataset, dataset)
     try:
         from flwr_datasets import FederatedDataset
         from flwr_datasets.partitioner import IidPartitioner, DirichletPartitioner
