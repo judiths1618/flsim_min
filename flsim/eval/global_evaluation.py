@@ -24,12 +24,16 @@ def evaluate_global_params(
     y: np.ndarray,
     *,
     batch_size: int = 2048,
+    device: str = "mps",
 ) -> Dict[str, float]:
     """Evaluate a global model (given params) on arrays X,y."""
     if X.size == 0 or y.size == 0:
         return {"n": 0.0, "loss": float("nan"), "acc": float("nan")}
     D = int(X.shape[1])
     K = int(np.max(y) + 1)
+
+    # Convert all global_params to float32 to avoid MPS float64 error
+    global_params = {k: v.astype(np.float32) for k, v in global_params.items()}
 
     ModelCls = MODEL.get(model_name)
     model = ModelCls(D, K)
@@ -44,8 +48,8 @@ def evaluate_global_params(
         ce_losses.append(_ce_loss_from_logits(logits, y[j]))
         preds[j] = np.argmax(logits, axis=1)
 
-    acc = float(np.mean(preds == y))
-    loss = float(np.mean(ce_losses))
+    acc = float(np.mean(preds == y)) # Overall accuracy indicates how well the model performs on the entire dataset
+    loss = float(np.mean(ce_losses))    # Cross-entropy loss indicates how well the predicted probabilities match the true labels, averaged over all batches
     return {"n": float(N), "loss": loss, "acc": acc}
 
 def evaluate_global_on_flower(

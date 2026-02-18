@@ -60,7 +60,7 @@ class ComposedContract:
         self.nodes[node_id] = NodeState(
             node_id=node_id, stake=float(stake), reputation=float(reputation)
         )
-
+        
     def set_features(self, node_id: int, **feats: Any):
         out = {}
         for k, v in feats.items():
@@ -132,6 +132,11 @@ class ComposedContract:
                 self.nodes[nid].cooldown = self.cooldowns[nid]
                 if round_idx is not None:
                     self.nodes[nid].committee_history.append(round_idx)
+        for nid in self.nodes:
+            if nid not in self.cooldowns:
+                self.cooldowns[nid] = 0.0
+            if nid in self.nodes:
+                self.nodes[nid].cooldown = self.cooldowns[nid]
         return sel
 
     def _execute_plans(self, plans: Dict, detected_ids, *, round_idx: int):

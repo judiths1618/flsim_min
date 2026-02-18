@@ -1,0 +1,143 @@
+python flsim/run_experiment_ours.py --config configs/exp_ours.yaml --model cnn_mnist --mal-frac 0.1 --mal-behavior zero
+/Users/yuandouwang/Documents/projects/flsim_min/flsim/run_experiment_ours.py:103: RuntimeWarning: invalid value encountered in scalar divide
+  return float((2 * np.sum(index * arr)) / (n * arr.sum()) - (n + 1) / n)
+Using: mps
+OK, elapsed: 0.00603485107421875 s 741532.4375
+load yaml path: configs/exp_ours.yaml
+[Info] Malicious nodes: [1, 15] (behavior=zero, ratio=0.1)
+[Eval] Base global (round 0): acc=0.0905, loss=2.3032
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0}
+[history] Detected suspicious clients: set()
+Final suspicious clients for round 1: {0}
+Admitted client ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=19: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} | S_t=4.70579 | dists[min/med/max]=[3.33612/4.70579/8.94453] | clip=on (S_eff=4.70579) | clipped_ratio=0.474 | weighted=yes | use_noise=False | noise=0
+[Round 1] 
+ Detected malicious: 1; Truth: 2; Committee: [5, 19, 6]
+ 
+[Eval] Global after round 1: acc=0.8984, loss=0.5553
+
+=== Per-client test acc ===
+flagged:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: True, 16: False, 17: False, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 15}
+[history] Detected suspicious clients: set()
+Final suspicious clients for round 2: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=13.7867 | dists[min/med/max]=[13.3274/13.7867/14.5047] | clip=on (S_eff=13.7867) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 2] 
+ Detected malicious: 2; Truth: 2; Committee: [14, 3, 11]
+ 
+[Eval] Global after round 2: acc=0.9245, loss=0.3408
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 6}
+[History] Low contribution clients: [1, 15] (threshold=5.19)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 3: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.3301 | dists[min/med/max]=[13.9389/14.3301/15.122] | clip=on (S_eff=14.3301) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 3] 
+ Detected malicious: 2; Truth: 2; Committee: [10, 12, 2]
+ 
+[Eval] Global after round 3: acc=0.8484, loss=0.5209
+
+=== Per-client test acc ===
+flagged:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: True, 16: False, 17: False, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 15}
+[History] Low contribution clients: [1, 15] (threshold=5.53)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 4: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.1628 | dists[min/med/max]=[13.7343/14.1628/14.8707] | clip=on (S_eff=14.1628) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 4] 
+ Detected malicious: 2; Truth: 2; Committee: [18, 13, 17]
+ 
+[Eval] Global after round 4: acc=0.9185, loss=0.3160
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0}
+[History] Low contribution clients: [1, 15] (threshold=5.45)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 5: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.143 | dists[min/med/max]=[13.7551/14.143/14.8502] | clip=on (S_eff=14.143) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 5] 
+ Detected malicious: 2; Truth: 2; Committee: [7, 4, 9]
+ 
+[Eval] Global after round 5: acc=0.9053, loss=0.3480
+
+=== Per-client test acc ===
+flagged:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: True, 16: False, 17: False, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 15}
+[History] Low contribution clients: [1, 15] (threshold=5.52)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 6: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2919 | dists[min/med/max]=[13.8271/14.2919/14.9421] | clip=on (S_eff=14.2919) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 6] 
+ Detected malicious: 2; Truth: 2; Committee: [8, 16, 11]
+ 
+[Eval] Global after round 6: acc=0.9363, loss=0.2523
+
+=== Per-client test acc ===
+flagged:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: True, 16: False, 17: False, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 15}
+[History] Low contribution clients: [1, 15] (threshold=5.24)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 7: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.4145 | dists[min/med/max]=[13.9615/14.4145/15.0628] | clip=on (S_eff=14.4145) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 7] 
+ Detected malicious: 2; Truth: 2; Committee: [10, 19, 2]
+ 
+[Eval] Global after round 7: acc=0.9277, loss=0.3331
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0}
+[History] Low contribution clients: [1, 15] (threshold=5.20)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 8: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.3966 | dists[min/med/max]=[13.927/14.3966/15.0897] | clip=on (S_eff=14.3966) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 8] 
+ Detected malicious: 2; Truth: 2; Committee: [14, 13, 17]
+ 
+[Eval] Global after round 8: acc=0.9213, loss=0.3269
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0}
+[History] Low contribution clients: [1, 15] (threshold=5.30)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 9: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2604 | dists[min/med/max]=[13.8613/14.2604/14.9544] | clip=on (S_eff=14.2604) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 9] 
+ Detected malicious: 2; Truth: 2; Committee: [7, 5, 6]
+ 
+[Eval] Global after round 9: acc=0.9269, loss=0.2834
+
+=== Per-client test acc ===
+flagged:  {0: False, 1: True, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False, 14: False, 15: True, 16: False, 17: False, 18: False, 19: False}
+[Flame] Detected malicious clients: {1, 15}
+[History] Low contribution clients: [1, 15] (threshold=5.71)
+[history] Detected suspicious clients: {1, 15}
+Final suspicious clients for round 10: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2048 | dists[min/med/max]=[13.7614/14.2048/14.8953] | clip=on (S_eff=14.2048) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 10] 
+ Detected malicious: 2; Truth: 2; Committee: [18, 4, 11]
+ 
+[Eval] Global after round 10: acc=0.9189, loss=0.3180
+
+Detection over rounds:
+  Precision: 0.900 ± 0.300
+  Recall:    0.900 ± 0.300
+  TP:        1.800 ± 0.600
+  FP:        0.100 ± 0.300
+  FN:        0.200 ± 0.600
+Balances - benign total: 2426.7810 (mean 134.8212 ± 11.4365), malicious total: 0.0000 (mean 0.0000 ± 0.0000)
+Benign fairness: 0.9929, Malicious fairness: 0.0000
+Benign Gini: 0.0453, Malicious Gini: nan
+Jain's Fairness: 0.8936
+Gini Coefficient: 0.1407
+

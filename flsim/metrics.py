@@ -16,17 +16,17 @@ class DetectionMetrics:
     def summary(self):
         out = []
         for r, det, tru in zip(self.rounds, self.detected, self.truth):
-            tp = len(det & tru)
-            fp = len(det - tru)
-            fn = len(tru - det)
-            precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-            recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            tp = len(det & tru) # True Positives, indicates how many malicious nodes were correctly detected
+            fp = len(det - tru) # False Positives, indicates how many benign nodes were incorrectly detected as malicious
+            fn = len(tru - det) # False Negatives, indicates how many malicious nodes were missed by the detector
+            precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0 # indicate how well the detector avoids false alarms, is the ratio of detected malicious nodes to all detected nodes
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0   # indicates how well the detector finds all malicious nodes, is the ratio of detected malicious nodes to all malicious nodes
             out.append({
                 "round": r,
                 "detected": len(sorted(det)),
                 "true_malicious": len(sorted(tru)),
-                "precision": precision,
-                "recall": recall,
+                "precision": precision,  # Precision metric. the ability of the model to not label a benign node as malicious
+                "recall": recall,  # Recall metric. the ability of the model to find all malicious nodes
                 "tp": tp, "fp": fp, "fn": fn
             })
         return out

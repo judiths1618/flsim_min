@@ -1,0 +1,6 @@
+Metric,Flame+incentives, Ours
+global ACC,0.92,0.92
+Precision,1.0,1.0
+Recall,1.0, 1.0
+BF,0.99,0.99
+BG,0.06, 0.06

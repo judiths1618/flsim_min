@@ -6,11 +6,16 @@ try:
     import torch
     from torch import nn
     import torch, time
-    device = "cuda" if torch.cuda.is_available() else ("mps" if hasattr(torch.backends,"mps") and torch.backends.mps.is_available() else "cpu")
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else ("mps" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "cpu")
+    )
     print("Using:", device)
+
     x = torch.randn(8192, 8192, device=device)
-    t0=time.time(); y = x @ x; torch.cuda.synchronize() if device=="cuda" else None
-    print("OK, elapsed:", time.time()-t0, "s", y.norm().item())
+    t0 = time.time(); y = x @ x; torch.cuda.synchronize() if device.type == "cuda" else None
+    print("OK, elapsed:", time.time() - t0, "s", y.norm().item())
 
 except Exception as e:  # pragma: no cover - torch is optional
     raise RuntimeError("PyTorch is required to use flsim.model.nets") from e
@@ -24,7 +29,9 @@ class _TorchModel(BaseModel):
 
     def __init__(self, input_dim: int, num_classes: int, **kwargs: Any) -> None:
         super().__init__(input_dim, num_classes, **kwargs)
-        self.model = self._build_model()
+        # self.model = self._build_model()
+        self.model = self._build_model().to(device)
+
 
     def _build_model(self) -> nn.Module:  # pragma: no cover - abstract
         raise NotImplementedError
@@ -42,14 +49,16 @@ class _TorchModel(BaseModel):
         return {k: v.detach().cpu().numpy().copy() for k, v in self.model.state_dict().items()}
 
     def set_parameters(self, params: dict[str, np.ndarray]) -> None:
-        state = {k: torch.tensor(v) for k, v in params.items()}
+        # state = {k: torch.tensor(v) for k, v in params.items()}
+        state = {k: torch.tensor(v, device=device) for k, v in params.items()}
         self.model.load_state_dict(state, strict=True)
 
     # ---- inference ----------------------------------------------------------
     def predict_logits(self, X: np.ndarray) -> np.ndarray:
         self.model.eval()
         with torch.no_grad():
-            X_t = torch.tensor(X, dtype=torch.float32)
+            # X_t = torch.tensor(X, dtype=torch.float32)
+            X_t = torch.tensor(X, dtype=torch.float32, device=device)
             logits = self.model(X_t)
             return logits.detach().cpu().numpy()
 
@@ -81,8 +90,10 @@ class _TorchModel(BaseModel):
                 rng.shuffle(idx)
             for s in range(0, N, int(batch_size)):
                 j = idx[s : s + int(batch_size)]
-                Xb = torch.tensor(X[j], dtype=torch.float32)
-                yb = torch.tensor(y[j], dtype=torch.long)
+                # Xb = torch.tensor(X[j], dtype=torch.float32)
+                # yb = torch.tensor(y[j], dtype=torch.long)
+                Xb = torch.tensor(X[j], dtype=torch.float32, device=device)
+                yb = torch.tensor(y[j], dtype=torch.long, device=device)
                 optim.zero_grad()
                 logits = self.model(Xb)
                 loss = loss_fn(logits, yb)
@@ -91,13 +102,14 @@ class _TorchModel(BaseModel):
 
         self.model.eval()
         with torch.no_grad():
-            logits = self.model(torch.tensor(X, dtype=torch.float32))
-            loss = loss_fn(logits, torch.tensor(y, dtype=torch.long)).item()
+            logits = self.model(torch.tensor(X, dtype=torch.float32, device=device))
+            loss = loss_fn(logits, torch.tensor(y, dtype=torch.long, device=device)).item()
             preds = logits.argmax(dim=1).cpu().numpy()
             acc = float(np.mean(preds == y)) if N > 0 else float("nan")
 
             if X_val is not None and y_val is not None and y_val.size > 0:
-                v_logits = self.model(torch.tensor(X_val, dtype=torch.float32))
+                # v_logits = self.model(torch.tensor(X_val, dtype=torch.float32))
+                v_logits = self.model(torch.tensor(X_val, dtype=torch.float32, device=device))
                 v_preds = v_logits.argmax(dim=1).cpu().numpy()
                 v_acc = float(np.mean(v_preds == y_val))
             else:

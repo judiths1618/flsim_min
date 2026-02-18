@@ -193,7 +193,7 @@ def main():
         "is_malicious",
         "detected",
     ]
-    log_file = open(f"./results/fl_log_ours_{args.mal_behavior}_{args.model}.csv", "w", newline="")
+    log_file = open(f"./results/fl_log_ours_{args.mal_behavior}_{args.model}_{args.mal_frac}_iid_{args.iid}_{args.alpha}.csv", "w", newline="")
     writer = csv.DictWriter(log_file, fieldnames=log_fields)
     writer.writeheader()
 
@@ -346,6 +346,8 @@ def main():
             suspicious = set(flame_malicious) # use flame results if any
         elif suspicious.isdisjoint(flame_malicious): # if no overlap, keep history ones
             suspicious = set(suspicious) # keep history ones
+        elif suspicious.issubset(flame_malicious): # if history is subset of flame, use suspicious ones
+            suspicious = set(suspicious)
         else:   # if overlap, take union
             suspicious = set(suspicious).union(flame_malicious)
 
@@ -360,7 +362,7 @@ def main():
         # print(f"GLOBAL: acc={mG['acc']:.4f}, loss={mG['loss']:.4f}")
         global_params2 = result["global_params"]
         eval_metrics2 = evaluate_global_params(args.model, global_params2,
-                                         X_eval, y_eval)
+                                         X_eval, y_eval) # indicates how well the model generalizes to unseen data
         print(f"[Eval] Global after round {r}: acc={eval_metrics2['acc']:.4f}, loss={eval_metrics2['loss']:.4f}\n")
 
         # Include evaluation metrics in the round results for downstream analysis

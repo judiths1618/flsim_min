@@ -1,0 +1,8 @@
+Metric,Flame+incentives, Ours
+global ACC,0.90,0.92
+Precision,0.0,0.8
+Recall,0.0, 0.8
+BF,0.99,0.99
+MF,0.81,0.0
+
+# This CSV file contains the results of different metrics for five models: "Flame+incentives (scale)", "Flame+incentives (signflip)", "Flame+incentives (zero)", "Flame+incentives (noise)", and "Ours".

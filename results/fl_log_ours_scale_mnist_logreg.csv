@@ -1,1 +1,0 @@
-round,node_id,stake,reputation,train_acc,train_loss,val_acc,val_loss,reward,stake_penalty,rep_penalty,is_committee,is_malicious,detected

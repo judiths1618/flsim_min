@@ -1,0 +1,46 @@
+# configs/exp_flame.yaml
+detection:
+  name: flame
+  params:
+    min_points: 4
+    min_cluster_frac: 0.2
+    dbscan_eps: 0.3
+    detect_score_thresh: 0.1
+aggregation:
+  name: flame_agg       # FLAME aggregation
+  params:
+    percentile: 0.9
+    epsilon: 1e+6
+    delta: 1e-4
+    use_clipping: True
+    use_noise: False
+
+selection:
+  name: stratified_softmax
+  params:
+    committee_size: 3
+    rep_exponent: 1.0
+    cooldown: 3
+    num_strata: 3
+
+settlement:
+  name: plans_engine
+  params:
+    warmup_rounds: 1
+
+reward:
+  name: ours
+  params:
+    base_reward: 100.0
+    hist_decay: 0.9
+    stake_weight: 0.4
+
+penalty:
+  name: ours
+  params:
+    stake_penalty_factor: 0.2
+    rep_penalty_factor: 0.5
+
+reputation:
+  name: none
+

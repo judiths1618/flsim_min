@@ -1,0 +1,110 @@
+python flsim/run_experiment_flame_incentives.py --config configs/exp_flame_incentives.yaml --model cnn_mnist --mal-frac 0.1 --mal-behavior scale
+/Users/yuandouwang/Documents/projects/flsim_min/flsim/run_experiment_flame_incentives.py:103: RuntimeWarning: invalid value encountered in scalar divide
+  return float((2 * np.sum(index * arr)) / (n * arr.sum()) - (n + 1) / n)
+Using: mps
+OK, elapsed: 0.00876307487487793 s 741409.3125
+load yaml path: configs/exp_flame_incentives.yaml
+[Info] Malicious nodes: [1, 15] (behavior=scale, ratio=0.1)
+[Eval] Base global (round 0): acc=0.1026, loss=2.3050
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=4.63199 | dists[min/med/max]=[3.31742/4.63199/6.0552] | clip=on (S_eff=4.63199) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 1] 
+ Detected malicious: 2; Truth: 2; Committee: [10, 3, 2]
+ 
+[Eval] Global after round 1: acc=0.9210, loss=0.3098
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2403 | dists[min/med/max]=[13.7908/14.2403/14.6639] | clip=on (S_eff=14.2403) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 2] 
+ Detected malicious: 3; Truth: 2; Committee: [18, 16, 6]
+ 
+[Eval] Global after round 2: acc=0.9072, loss=0.4670
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2386 | dists[min/med/max]=[13.8216/14.2386/14.8691] | clip=on (S_eff=14.2386) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 3] 
+ Detected malicious: 3; Truth: 2; Committee: [8, 12, 19]
+ 
+[Eval] Global after round 3: acc=0.8154, loss=0.5930
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2405 | dists[min/med/max]=[13.7975/14.2405/14.6846] | clip=on (S_eff=14.2405) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 4] 
+ Detected malicious: 3; Truth: 2; Committee: [7, 13, 17]
+ 
+[Eval] Global after round 4: acc=0.9254, loss=0.3319
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2812 | dists[min/med/max]=[13.84/14.2812/14.6827] | clip=on (S_eff=14.2812) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 5] 
+ Detected malicious: 3; Truth: 2; Committee: [3, 4, 11]
+ 
+[Eval] Global after round 5: acc=0.9195, loss=0.4605
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2518 | dists[min/med/max]=[13.8069/14.2518/14.6876] | clip=on (S_eff=14.2518) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 6] 
+ Detected malicious: 3; Truth: 2; Committee: [10, 5, 16]
+ 
+[Eval] Global after round 6: acc=0.9324, loss=0.2894
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.1796 | dists[min/med/max]=[13.7606/14.1796/14.6431] | clip=on (S_eff=14.1796) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 7] 
+ Detected malicious: 3; Truth: 2; Committee: [8, 19, 9]
+ 
+[Eval] Global after round 7: acc=0.9130, loss=0.3621
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.1691 | dists[min/med/max]=[13.6979/14.1691/14.5432] | clip=on (S_eff=14.1691) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 8] 
+ Detected malicious: 3; Truth: 2; Committee: [14, 13, 12]
+ 
+[Eval] Global after round 8: acc=0.9150, loss=0.3305
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {1, 15}
+Admitted client ids: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=18: {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.2663 | dists[min/med/max]=[13.8541/14.2663/14.9515] | clip=on (S_eff=14.2663) | clipped_ratio=0.500 | weighted=yes | use_noise=False | noise=0
+[Round 9] 
+ Detected malicious: 2; Truth: 2; Committee: [7, 3, 17]
+ 
+[Eval] Global after round 9: acc=0.9180, loss=0.3313
+
+=== Per-client test acc ===
+[Flame] Detected malicious clients: {0, 1, 15}
+Admitted client ids: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+[FLAME DEBUG] | num_clients=17: {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19} | S_t=14.1047 | dists[min/med/max]=[13.674/14.1047/14.5124] | clip=on (S_eff=14.1047) | clipped_ratio=0.471 | weighted=yes | use_noise=False | noise=0
+[Round 10] 
+ Detected malicious: 3; Truth: 2; Committee: [10, 5, 11]
+ 
+[Eval] Global after round 10: acc=0.9272, loss=0.2870
+
+Detection over rounds:
+  Precision: 0.733 ± 0.133
+  Recall:    1.000 ± 0.000
+  TP:        2.000 ± 0.000
+  FP:        0.800 ± 0.400
+  FN:        0.000 ± 0.000
+Balances - benign total: 1990.2410 (mean 110.5689 ± 26.2343), malicious total: 0.0000 (mean 0.0000 ± 0.0000)
+Benign fairness: 0.9467, Malicious fairness: 0.0000
+Benign Gini: 0.1079, Malicious Gini: nan
+Jain's Fairness: 0.8520
+Gini Coefficient: 0.1971
+

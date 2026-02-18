@@ -193,7 +193,7 @@ def main():
         "is_malicious",
         "detected",
     ]
-    log_file = open(f"./results/fl_log_flame_incentives_{args.mal_behavior}_{args.dataset}_{args.model}.csv", "w", newline="")
+    log_file = open(f"./results/fl_log_flame_incentives_{args.mal_behavior}_{args.model}_{args.mal_frac}_iid_{args.iid}_{args.alpha}.csv", "w", newline="")
     writer = csv.DictWriter(log_file, fieldnames=log_fields)
     writer.writeheader()
 
